@@ -1,6 +1,7 @@
-package lookingglass;
+package looking_glass;
 
 import java.util.List;
+import java.time.Instant;
 
 import burp.api.montoya.http.message.Cookie;
 import burp.api.montoya.http.message.HttpHeader;
@@ -24,7 +25,7 @@ public class Response {
     public int contentLength;
 
     // Date.
-    public 
+    public Instant date;
 
     public List<HttpHeader> headers;
 
@@ -46,7 +47,8 @@ public class Response {
         this.headers = response.headers();
         this.cookies = response.cookies();
     }
-}
- {
-    
+
+    public String getHeader(String name) {
+        return Utils.getHeader(name, this.headers);
+    }
 }

@@ -1,8 +1,13 @@
-package lookingglass;
+package looking_glass;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
+import burp.api.montoya.core.Annotations;
+import burp.api.montoya.http.message.Cookie;
 import burp.api.montoya.http.message.HttpHeader;
+import burp.api.montoya.http.message.params.HttpParameterType;
 import burp.api.montoya.http.message.params.ParsedHttpParameter;
 import burp.api.montoya.http.message.requests.HttpRequest;
 
@@ -49,8 +54,20 @@ public class Request {
     // Authorization type.
     public String authorizationType;
 
+    // Date
+    public Instant date;
+
+    // HighlightColor
+    public String highlightColor;
+
+    // Notes, is this the Burp comment?
+    public String notes;
+
+    // Cookies.
+    public List<Cookie> cookies;
+
     // Constructor to populate the fields from a HttpRequest object.
-    public Request(HttpRequest request) {
+    public Request(HttpRequest request, Annotations annotations) {
         this.url = request.url();
         this.method = request.method();
         this.path = request.path();
@@ -68,6 +85,10 @@ public class Request {
         this.accept = Utils.getHeader("Accept", request.headers());
         this.contentLength = Integer.parseInt(Utils.getHeader("Content-Length", request.headers()));
 
+        // Set annotations.
+        this.highlightColor = annotations.highlightColor().toString();
+        this.notes = annotations.notes();
+
         String authorization = Utils.getHeader("Authorization", request.headers());
         if (authorization != null) {
             // Do something with authorization.
@@ -82,14 +103,25 @@ public class Request {
             }
         }
 
-        // This stores the parameter values. We want to gatekeep it under a flag.
-        this.parameters = request.parameters();
-
         // Request cookies are parameters.
+        // Go through the parameters and extract the cookies.
+
+        List<Cookie> cookieList = new ArrayList<Cookie>();
+        for (ParsedHttpParameter parameter : request.parameters()) {
+            if (parameter.type() == HttpParameterType.COOKIE) {
+                Cookie cookie = Cookie {
+                    name: parameter.name(),
+                    value: parameter.value()}                
+            }
+        }
 
         // The rest of the headers. Again, same as above, we want to skip the
         // values, later, if needed.
         this.headers = request.headers();
+    }
+
+    public String getHeader(String name) {
+        return Utils.getHeader(name, this.headers);
     }
 
 }
