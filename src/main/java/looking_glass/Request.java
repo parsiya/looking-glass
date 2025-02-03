@@ -1,13 +1,11 @@
 package looking_glass;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 import burp.api.montoya.core.Annotations;
-import burp.api.montoya.http.message.Cookie;
+import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.message.HttpHeader;
-import burp.api.montoya.http.message.params.HttpParameterType;
 import burp.api.montoya.http.message.params.ParsedHttpParameter;
 import burp.api.montoya.http.message.requests.HttpRequest;
 
@@ -63,11 +61,11 @@ public class Request {
     // Notes, is this the Burp comment?
     public String notes;
 
-    // Cookies.
-    public List<Cookie> cookies;
+    // Tool source.
+    public ToolType toolSource;
 
     // Constructor to populate the fields from a HttpRequest object.
-    public Request(HttpRequest request, Annotations annotations) {
+    public Request(HttpRequest request, Annotations annotations, ToolType toolSource) {
         this.url = request.url();
         this.method = request.method();
         this.path = request.path();
@@ -78,40 +76,35 @@ public class Request {
         this.port = request.httpService().port();
         this.isHttps = request.httpService().secure();
 
+        this.accept = Utils.getHeader("Accept", request.headers());
         this.contentType = Utils.getHeader("Content-Type", request.headers());
         this.userAgent = Utils.getHeader("User-Agent", request.headers());
         this.referer = Utils.getHeader("Referer", request.headers());
         this.origin = Utils.getHeader("Origin", request.headers());
-        this.accept = Utils.getHeader("Accept", request.headers());
-        this.contentLength = Integer.parseInt(Utils.getHeader("Content-Length", request.headers()));
+        
+        // If the content length is not present, set it to 0.
+        String contentLengthHeader = Utils.getHeader("Content-Length", request.headers());
+        this.contentLength = (contentLengthHeader != null) ? Integer.parseInt(contentLengthHeader) : 0;
 
         // Set annotations.
         this.highlightColor = annotations.highlightColor().toString();
         this.notes = annotations.notes();
 
+        // Set tool source.
+        this.toolSource = toolSource;
+
         String authorization = Utils.getHeader("Authorization", request.headers());
         if (authorization != null) {
             // Do something with authorization.
             if (authorization.startsWith("Bearer ")) {
-                // It's a JWT token.
-                this.authorizationType = "JWT";
+                // It's a bearer token.
+                this.authorizationType = "BEARER";
                 // Extract the token.
                 // String token = authorization.substring(7);
-                // TODO: Do something with the claims.
+                // TODO: First figure out what type of token we have. E.g., JWT?
+                // TODO: If JWT, do something with the claims
                 // E.g., we can figure out if it's an AAD or not, if so, we can
                 // store the type as AAD.
-            }
-        }
-
-        // Request cookies are parameters.
-        // Go through the parameters and extract the cookies.
-
-        List<Cookie> cookieList = new ArrayList<Cookie>();
-        for (ParsedHttpParameter parameter : request.parameters()) {
-            if (parameter.type() == HttpParameterType.COOKIE) {
-                Cookie cookie = Cookie {
-                    name: parameter.name(),
-                    value: parameter.value()}                
             }
         }
 
