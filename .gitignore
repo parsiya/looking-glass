@@ -28,7 +28,8 @@ build/
 bin/
 
 # keep the release directory and the build jar
-!/release/*.jar
+# ZZZ remove this for the final version.
+# !/release/*.jar
 
 # do not keep .gradle
 .gradle/
