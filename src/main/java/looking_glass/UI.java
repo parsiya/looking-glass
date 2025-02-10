@@ -3,8 +3,10 @@ package looking_glass;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.io.File;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class UI extends JSplitPane {
 
@@ -29,20 +31,29 @@ public class UI extends JSplitPane {
         queryListScrollPane = new JScrollPane(queryList);
 
         // Create two buttons on top of each other.
-        JButton button1 = new JButton("Run");
-        button1.setBackground(new Color(255, 102, 51));
-        button1.setForeground(Color.WHITE);
-        button1.setFont(button1.getFont().deriveFont(Font.BOLD));
+        JButton runBtn = new JButton("Run");
+        // Color of Burp Repeater's "Send" button.
+        runBtn.setBackground(new Color(255, 102, 51));
+        runBtn.setForeground(Color.WHITE);
+        runBtn.setFont(runBtn.getFont().deriveFont(Font.BOLD));
 
-        JButton button2 = new JButton("Save");
-        button2.setFont(button1.getFont().deriveFont(Font.BOLD));
+        JButton saveBtn = new JButton("Save");
+
+        JButton button3 = new JButton("Clear");
+
+        JButton configBtn = new JButton("Config");
+        configBtn.setFont(runBtn.getFont().deriveFont(Font.BOLD));
+        configBtn.addActionListener(e -> selectDBFile());
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
-        buttonPanel.add(button1);
+        buttonPanel.add(runBtn);
         buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
-        buttonPanel.add(button2);
+        buttonPanel.add(saveBtn);
+        buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonPanel.add(button3);
         buttonPanel.add(Box.createHorizontalGlue());
+        buttonPanel.add(configBtn);
 
         // Create the text area.
         queryTextArea = new JTextArea();
@@ -70,6 +81,40 @@ public class UI extends JSplitPane {
 
         this.setLeftComponent(queryListScrollPane);
         this.setRightComponent(resultsSplitPane);
+
+        // Apply the Burp them to the UI.
+        Utils.api().userInterface().applyThemeToComponent(this);
     }
 
+    // Opens a file chooser dialog to select a file.
+    public static File selectDBFile() {
+        // Create a file chooser and set the file extension filter.
+        JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("DB files", "db");
+        fileChooser.setFileFilter(filter);
+
+        // Show the file chooser dialog
+        int returnVal = fileChooser.showSaveDialog(null);
+
+        // Check if a file was selected
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            // Get the selected file
+            File file = fileChooser.getSelectedFile();
+
+            // If the file doesn't exist, get the path.
+            if (!file.exists()) {
+                Log.toOutput("DB doesn't exist, creating a new DB.");
+            }
+            try {
+                // Is this thing on? Can you see the class?
+                Class.forName("org.sqlite.JDBC");
+                DB.connect(file.getAbsolutePath());
+            } catch (Exception e) {
+                Log.toError("Error creating DB: " + e.getMessage());
+                return null;
+            }
+        }
+
+        return null;
+    }
 }

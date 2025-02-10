@@ -3,7 +3,6 @@ package looking_glass;
 import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.core.ToolType;
-import burp.api.montoya.logging.Logging;
 import burp.api.montoya.proxy.*;
 
 import java.util.List;
@@ -15,18 +14,27 @@ public class Extension implements BurpExtension {
         // set extension name
         api.extension().setName("Looking Glass");
 
-        Logging logging = api.logging();
+        // Initialize the Utils class.
+        Utils.initialize(api);
 
-        // write a message to our output stream
-        logging.logToOutput("Hello output.");
+        Log.toOutput("Hello output.");
 
-        // Just add a tab to the Burp UI.
+        // Add a tab to the Burp UI.
         api.userInterface().registerSuiteTab("Looking Glass", new UI(200));
 
+        // Get the proxy history.
+        Proxy proxy = api.proxy();
+        List<ProxyHttpRequestResponse> history = proxy.history();
 
-        // // Get the proxy history.
-        // Proxy proxy = api.proxy();
-        // List<ProxyHttpRequestResponse> history = proxy.history();
+        ProxyHttpRequestResponse firstItem = history.get(16);
+
+        if (firstItem != null) {
+            Request req = new Request(firstItem.finalRequest(), firstItem.annotations(), ToolType.PROXY);
+            // Convert the request to JSON.
+            String requestJson = Utils.toJson(req);
+            Log.toOutput(requestJson);
+            
+        }
 
         // // Go through the proxy history.
         // for (ProxyHttpRequestResponse item : history) {

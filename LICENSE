@@ -19,3 +19,21 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+// ZZZ
+// Add a note about used DateUtils.java and other files from the Apache Commons
+// library. Add something like this.
+
+The following files are included in this project from the Apache HttpComponents
+5.4.2 project Licensed under the Apache License, Version 2.0 (ASL 2.0)
+http://www.apache.org/licenses/LICENSE-2.0
+
+* DateUtils.java
+* https://github.com/apache/httpcomponents-client/blob/master/httpclient5/src/main/java/org/apache/hc/client5/http/utils/DateUtils.java
+* ZZZ assuming I keep this.
+
+The following files are included in this project from the Apache Commons Lang
+3.12.0 (org.apache.commons:commons-lang3:3.12.0) Licensed under the Apache
+License, Version 2.0 (ASL 2.0) http://www.apache.org/licenses/LICENSE-2.0
+
+* Any files from the common lang. E.g., StringUtils.java

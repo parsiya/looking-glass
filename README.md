@@ -67,10 +67,16 @@ Help with blue team tracking
 ### Request/Response with a specific response header
 Like ms-cv, correlation ID and so on. Helps the blue team.
 
+### Filter by Referer
+What are all the requests that have originated from a specific page.
+
+### Sec-whatever Headers
+Figure out which ones are populated if the action was a user action and what the
+value is. Credit where you learned from, another student in the Burp course.
+
 ## More Complex
 
 ### OpenAPI
 Need processing on the client. Show a picture of the mapping from HTTP
 request/response to OpenAPI.
 
-  

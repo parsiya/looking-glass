@@ -44,16 +44,16 @@ public class Response {
         this.httpVersion = response.httpVersion();
         this.body = response.bodyToString();
 
-        this.contentType = Utils.getHeader("Content-Type", response.headers());
-        this.inferredContentType = response.inferredMimeType().toString();
+        // this.contentType = Utils.getHeader("Content-Type", response.headers());
+        // this.inferredContentType = response.inferredMimeType().toString();
 
-        // Only parse if the `Date` header exists, otherwise set it to null.
-        String dateHeader = Utils.getHeader("Date", response.headers());
-        this.date = (dateHeader != null) ? Utils.parseHttpDate(dateHeader) : null;
+        // // Only parse if the `Date` header exists, otherwise set it to null.
+        // String dateHeader = Utils.getHeader("Date", response.headers());
+        // this.date = (dateHeader != null) ? Utils.parseHttpDate(dateHeader) : null;
 
-        // Only parse if the `Content-Length` header exists, otherwise set it to 0.
-        String contentLengthHeader = Utils.getHeader("Content-Length", response.headers());
-        this.contentLength = (contentLengthHeader != null) ? Integer.parseInt(contentLengthHeader) : 0;
+        // // Only parse if the `Content-Length` header exists, otherwise set it to 0.
+        // String contentLengthHeader = Utils.getHeader("Content-Length", response.headers());
+        // this.contentLength = (contentLengthHeader != null) ? Integer.parseInt(contentLengthHeader) : 0;
 
         this.headers = response.headers();
         this.cookies = response.cookies();
@@ -61,7 +61,7 @@ public class Response {
         this.toolSource = toolSource;
     }
 
-    public String getHeader(String name) {
-        return Utils.getHeader(name, this.headers);
-    }
+    // public String getHeader(String name) {
+    //     return Utils.getHeader(name, this.headers);
+    // }
 }
