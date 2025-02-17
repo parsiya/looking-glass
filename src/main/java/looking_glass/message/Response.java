@@ -1,4 +1,4 @@
-package looking_glass;
+package looking_glass.message;
 
 import java.util.List;
 import java.time.Instant;

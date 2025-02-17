@@ -1,4 +1,4 @@
-package looking_glass;
+package looking_glass.message;
 
 import burp.api.montoya.http.message.params.ParsedHttpParameter;
 

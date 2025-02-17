@@ -9,6 +9,8 @@ import java.sql.Statement;
 import burp.api.montoya.core.Registration;
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.handler.*;
+import looking_glass.message.Request;
+import looking_glass.message.Response;
 
 // Handler class to handle the requests and responses.
 

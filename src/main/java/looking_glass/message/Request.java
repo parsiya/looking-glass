@@ -1,4 +1,4 @@
-package looking_glass;
+package looking_glass.message;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -9,6 +9,8 @@ import burp.api.montoya.core.Annotations;
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.message.params.ParsedHttpParameter;
 import burp.api.montoya.http.message.requests.HttpRequest;
+import looking_glass.Header;
+import looking_glass.Utils;
 
 public class Request {
     public String url, method, path, httpVersion, body;

@@ -15,9 +15,9 @@ import burp.api.montoya.proxy.ProxyHttpRequestResponse;
 import looking_glass.Constants;
 import looking_glass.DB;
 import looking_glass.Log;
-import looking_glass.Request;
-import looking_glass.Response;
 import looking_glass.Utils;
+import looking_glass.message.Request;
+import looking_glass.message.Response;
 
 public class Tab extends JSplitPane {
 
