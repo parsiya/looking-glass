@@ -80,3 +80,15 @@ value is. Credit where you learned from, another student in the Burp course.
 Need processing on the client. Show a picture of the mapping from HTTP
 request/response to OpenAPI.
 
+# TODO
+
+## Request/Response Length Limit
+Add a number in the settings, if the length of the body of the request or
+response is over that number, the body will not be stored. The rest of the
+fields will still be populated, but we will replace the value of the body with
+an empty string, this helps the size of the DB.
+
+## Settings Modal
+This requires us to create a settings modal. The modal can have fields for the
+settings like the one above and a button to set the DB. It can also have a
+button like the intercept in burp to turn off/on logging.
