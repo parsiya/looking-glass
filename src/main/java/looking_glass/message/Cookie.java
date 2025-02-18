@@ -6,7 +6,6 @@ import java.util.Optional;
 public class Cookie  {
     public String name, value, domain, path, expiration;
 
-
     // This can be used to create a response cookie.
     public Cookie(String name, String value, String domain, String path, Optional<ZonedDateTime> expiration) {
         this.name = name;

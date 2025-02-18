@@ -1,6 +1,5 @@
 package looking_glass.message;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,7 +13,7 @@ import looking_glass.common.Utils;
 public class Request {
     public String url, method, path, httpVersion, body;
 
-    public List<Parameter> parameters; // needs processing.
+    public List<Parameter> parameters;
     public List<Header> headers;
     public List<Cookie> cookies;
 
@@ -30,17 +29,27 @@ public class Request {
     // Authorization type.
     public String authorizationType;
 
-    // Date
-    public Instant date;
-
     // HighlightColor
     public String highlightColor;
 
-    // Notes, is this the Burp comment?
+    // Notes, this is the Burp comments.
     public String notes;
 
     // Tool source.
-    public ToolType toolSource;
+    public String toolSource;
+
+    // Extracted fields from headers.
+    // These can be extracted from the headers before the insert query, but I am
+    // processing and adding them here. This will be useful when we want to
+    // store these objects in something like Cosmos DB or PostgreSQL that indexes
+    // JSON fields.
+    public String contentType, origin, referer;
+    public int contentLength;
+    // These are comma-separated (for now) names of parameters, names, and cookies.
+    // This is useful in case we want to see IF a request has one of these or not.
+    public String parameterNames, cookieNames, headerNames;
+
+    // End of fields.
 
     // Constructor to populate the fields from a HttpRequest object.
     public Request(HttpRequest request, Annotations annotations, ToolType toolSource) {
@@ -59,8 +68,12 @@ public class Request {
             parsedHeaders.add(new Header("Content-Length", "0"));
         }
 
+        // Store parsed headers so we can use this.getHeader in the rest of the
+        // method instead of Utils.getHeader and save a few precious storage bytes.
+        this.headers = parsedHeaders;
+
         // Process the Authorization header.
-        String authorization = Utils.getHeader("Authorization", parsedHeaders);
+        String authorization = this.getHeader("Authorization");
         if (authorization != null) {
             // Do something with authorization.
             if (authorization.startsWith("Bearer ")) {
@@ -91,20 +104,13 @@ public class Request {
         this.port = request.httpService().port();
         this.isHttps = request.httpService().secure();
 
-        // // If the content length is not present, set it to 0.
-        // String contentLengthHeader = Utils.getHeader("Content-Length",
-        // request.headers());
-        // this.contentLength = (contentLengthHeader != null) ?
-        // Integer.parseInt(contentLengthHeader) : 0;
-
         // Set annotations.
         this.highlightColor = annotations.highlightColor().toString();
         this.notes = annotations.notes();
 
         // Set tool source.
-        this.toolSource = toolSource;
+        this.toolSource = toolSource.toolName();
 
-        
         // Parse the parameters.
         List<Parameter> parsedParameters = new ArrayList<Parameter>();
         List<Cookie> parsedCookies = new ArrayList<Cookie>();
@@ -117,18 +123,37 @@ public class Request {
                     parsedCookies.add(new Cookie(parameter.name(), parameter.value()));
                     break;
                 default:
-                    parsedParameters.add(new Parameter(parameter.type().toString(), parameter.name(), parameter.value()));
+                    parsedParameters
+                            .add(new Parameter(parameter.type().toString(), parameter.name(), parameter.value()));
                     break;
             }
         }
 
+        // Populate the extracted fields from headers.
+        this.contentType = this.getHeader("Content-Type");
+        this.origin = this.getHeader("Origin");
+        this.referer = this.getHeader("referer");
+        
+        // Content-Length has been set to 0 if it did not exist above, so we can
+        // just parse it as int.
+        this.contentLength = Integer.parseInt(this.getHeader("Content-Length"));
+
+        // Create the comma-separated list of header/cookie/parameter names.
+        this.headerNames = parsedHeaders.stream()
+            .map(h -> h.name())
+            .collect(Collectors.joining(","));
+
+        this.cookieNames = parsedCookies.stream()
+            .map(c -> c.name)
+            .collect(Collectors.joining(","));
+
+        this.parameterNames = parsedParameters.stream()
+            .map(p -> p.name)
+            .collect(Collectors.joining(","));
+
         // Postprocess any special parameters.
 
-        // Process cookies.
-        // Go through the parsedParameters and find the cookies.
-
-        // Add everything to the Request object.
-        this.headers = parsedHeaders;
+        // Add the cookies/parameters to the Request object.
         this.cookies = parsedCookies;
         this.parameters = parsedParameters;
 

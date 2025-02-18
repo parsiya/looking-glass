@@ -2,6 +2,7 @@ package looking_glass.common;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.http.message.HttpHeader;
@@ -25,8 +26,7 @@ public class Utils {
         return api;
     }
 
-    // Define a static method that takes a string and returns the value of that
-    // in a headers object from burp montoya API. If the header doesn't exist or
+    // Returns the value of the string in the list. If the header doesn't exist
     // returns null.
     public static String getHeader(String name, List<Header> headers) {
         return headers.stream()
@@ -35,6 +35,11 @@ public class Utils {
                 .findFirst()
                 .orElse(null);
     }
+
+    // Returns a comma separated string of names of the list. This list 
+    // String headerNames = list.stream()
+    // .map(h -> h.name())
+    // .collect(Collectors.joining(", "));
 
     // Convert a string containing an HTTP date to a java.time.Instant.
     public static Instant parseHttpDate(String date) {

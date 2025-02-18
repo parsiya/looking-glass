@@ -1,12 +1,16 @@
 package looking_glass.message;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.time.Instant;
 
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.message.Cookie;
 import burp.api.montoya.http.message.HttpHeader;
+import burp.api.montoya.http.message.params.ParsedHttpParameter;
 import burp.api.montoya.http.message.responses.HttpResponse;
+import looking_glass.common.Utils;
 
 public class Response {
     public short statusCode;
@@ -14,54 +18,84 @@ public class Response {
 
     // Custom fields from headers.
 
-    // Burp's response.MimeType returns an enum with recognized types. I want
+    // Burp's response.MimeType returns an enum with only the Burp's recognized types. I want
     // something freeform here.
     public String contentType;
-
     // response.inferredMimeType returns an enum with some types that Burp has
     // found. Let's store it in case I need it.
     public String inferredContentType;
 
-    // Get these from Attribute. What is inside `Attribute`?
     public int contentLength;
 
     // Date.
     public Instant date;
 
-    public List<HttpHeader> headers;
+    // Tool source.
+    public String toolSource;
 
-    // Response cookies are different from request cookies because they contain
-    // more info like path.
+    public List<Header> headers;
     public List<Cookie> cookies;
 
-    // Tool source.
-    public ToolType toolSource;
+    // True if the `Content-Security-Policy` exists.
+    public boolean contentSecurityPolicy;
+
+    // Some special response headers.
+    public String server;
+
+    // Comma-separated header and cookie names.
+    public String headerNames, cookieNames;
+
+    // End of fields.
 
     // Constructor to populate the fields from a HttpResponse object.
     public Response(HttpResponse response, ToolType toolSource) {
+        
+        // Go through the headers and store them in a list of Header objects.
+        List<Header> parsedHeaders = response.headers().stream()
+                .map(header -> new Header(header.name(), header.value()))
+                .collect(Collectors.toList());
+        
+        // Store parsed headers.
+        this.headers = parsedHeaders;
+        
         this.statusCode = response.statusCode();
         this.reasonPhrase = response.reasonPhrase();
         this.httpVersion = response.httpVersion();
         this.body = response.bodyToString();
 
-        // this.contentType = Utils.getHeader("Content-Type", response.headers());
-        // this.inferredContentType = response.inferredMimeType().toString();
+        this.contentType = this.getHeader("Content-Type");
+        this.inferredContentType = response.inferredMimeType().toString();
 
-        // // Only parse if the `Date` header exists, otherwise set it to null.
-        // String dateHeader = Utils.getHeader("Date", response.headers());
-        // this.date = (dateHeader != null) ? Utils.parseHttpDate(dateHeader) : null;
+        // Only parse if the `Date` header exists, otherwise set it to null.
+        String dateHeader = this.getHeader("Date");
+        this.date = (dateHeader != null) ? Utils.parseHttpDate(dateHeader) : null;
 
-        // // Only parse if the `Content-Length` header exists, otherwise set it to 0.
-        // String contentLengthHeader = Utils.getHeader("Content-Length", response.headers());
-        // this.contentLength = (contentLengthHeader != null) ? Integer.parseInt(contentLengthHeader) : 0;
+        this.toolSource = toolSource.toolName();
 
-        this.headers = response.headers();
+        this.server = this.getHeader("Server");
+
+        // What about other CSP headers that might be present without
+        // the "Content-Security-Policy" header like "-Report-Only"?
+        String cspHeader = this.getHeader("Content-Security-Policy");
+        this.contentSecurityPolicy = (cspHeader != null) ? true : false;
+
+        // Only parse if the `Content-Length` header exists, otherwise set it to 0.
+        String contentLengthHeader = this.getHeader("Content-Length");
+        this.contentLength = (contentLengthHeader != null) ? Integer.parseInt(contentLengthHeader) : 0;
+
+        // Set cookies.
         this.cookies = response.cookies();
+        // Extract cookie names.
+        this.cookieNames = this.cookies.stream()
+            .map(c -> c.name())
+            .collect(Collectors.joining(","));
 
-        this.toolSource = toolSource;
+        this.headerNames = this.headers.stream()
+            .map(h -> h.name())
+            .collect(Collectors.joining(","));
     }
 
-    // public String getHeader(String name) {
-    //     return Utils.getHeader(name, this.headers);
-    // }
+    public String getHeader(String name) {
+        return Utils.getHeader(name, this.headers);
+    }
 }

@@ -15,7 +15,7 @@ public class ExtensionUnload implements ExtensionUnloadingHandler {
             if (handler.isRegistered()) {
                 handler.deregister();
             }
-            handler.closeConnection();
+            handler.closeDBConnection();
         } catch (Exception e) {
             Log.toError("Error unloading the extension: " + e.getMessage());
         }
