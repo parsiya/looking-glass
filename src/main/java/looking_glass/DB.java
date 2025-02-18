@@ -7,6 +7,8 @@ import java.sql.Statement;
 
 import org.sqlite.SQLiteConfig;
 
+import looking_glass.common.Log;
+
 public class DB {
     private static final String SQLITE_JDBC_PREFIX = "jdbc:sqlite:";
 
@@ -28,12 +30,15 @@ public class DB {
 
     // Connect to a SQLite database. The DB file will be created if the file
     // doesn't exist.
-    public static Connection connect(String path) throws SQLException {
+    public static Connection connect(String path) throws SQLException, ClassNotFoundException {
         String url = SQLITE_JDBC_PREFIX + path;
+        // Is this thing on? Checks if the class is available.
+        Class.forName("org.sqlite.JDBC");
 
         SQLiteConfig config = new SQLiteConfig();
         config.enforceForeignKeys(true);
 
+        // Is this thing on? Can you see the class, extension?
         Connection connection = DriverManager.getConnection(url);
         Log.toOutput("Connected to the database at: " + path);
 

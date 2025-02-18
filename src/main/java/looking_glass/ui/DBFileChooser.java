@@ -6,7 +6,7 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class DBFileChooser {
+class DBFileChooser {
 
     private JFileChooser fileChooser;
     

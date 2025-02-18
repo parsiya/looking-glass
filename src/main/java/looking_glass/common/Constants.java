@@ -1,4 +1,4 @@
-package looking_glass;
+package looking_glass.common;
 
 public class Constants {
     public static final String EXTENSION_NAME = "Looking Glass";
@@ -18,7 +18,9 @@ public class Constants {
 
     public static final String SQLITE_JDBC_PREFIX = "jdbc:sqlite:";
 
-    public static final String[] DB_MODAL_OPTIONS = { "Use the file", "Choose a new one", "Don't log for now" };
+    public static final String[] DB_MODAL_OPTIONS = {
+            "Use the file", "Choose a new one", "Pause capture"
+    };
 
     // This is the key for the DB path in the extension's configuration.
     public static final String DB_PATH_KEY = "db_path";

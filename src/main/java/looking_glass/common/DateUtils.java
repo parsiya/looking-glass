@@ -30,7 +30,7 @@
 // https://github.com/apache/httpcomponents-client/blob/master/httpclient5/src/main/java/org/apache/hc/client5/http/utils/DateUtils.java
 // I removed some imports and deprecated methods.
 
-package looking_glass;
+package looking_glass.common;
 
 import java.time.DateTimeException;
 import java.time.Instant;

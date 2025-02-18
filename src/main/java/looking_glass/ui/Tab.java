@@ -5,17 +5,15 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
 import java.util.List;
-
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.proxy.Proxy;
 import burp.api.montoya.proxy.ProxyHttpRequestResponse;
-import looking_glass.Constants;
-import looking_glass.DB;
-import looking_glass.Log;
-import looking_glass.Utils;
+
+import looking_glass.common.Constants;
+import looking_glass.common.Log;
+import looking_glass.common.Utils;
 import looking_glass.message.Request;
 import looking_glass.message.Response;
 
@@ -54,7 +52,7 @@ public class Tab extends JSplitPane {
 
         JButton configBtn = new JButton("Config");
         configBtn.setFont(runBtn.getFont().deriveFont(Font.BOLD));
-        configBtn.addActionListener(e -> selectDBFile());
+        configBtn.addActionListener(e -> DBModal.show());
 
         JButton proxybtn = new JButton("Store Proxy History");
 
@@ -101,38 +99,6 @@ public class Tab extends JSplitPane {
 
         // Apply the Burp them to the UI.
         Utils.api().userInterface().applyThemeToComponent(this);
-    }
-
-    // Opens a file chooser dialog to select a file.
-    public static String selectDBFile() {
-        // Create a file chooser and set the file extension filter.
-        DBFileChooser fileChooser = new DBFileChooser();
-
-        // Show the file chooser dialog
-        int returnVal = fileChooser.show(null);
-
-        // Check if a file was selected
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            // Get the selected file
-            File file = fileChooser.getSelectedFile();
-
-            // If the file doesn't exist, get the path.
-            if (!file.exists()) {
-                Log.toOutput("DB doesn't exist, creating a new DB at: " + file.getAbsolutePath());
-            }
-            try {
-                // Is this thing on? Can you see the class?
-                Class.forName("org.sqlite.JDBC");
-                // Store the file path in the extension's configuration.
-                Utils.api().persistence().preferences().setString(Constants.DB_PATH_KEY, file.getAbsolutePath());
-                return file.getAbsolutePath();
-
-            } catch (Exception e) {
-                Log.toError("Error creating DB: " + e.getMessage());
-                return null;
-            }
-        }
-        return null;
     }
 
     public static void storeProxyHistory() {

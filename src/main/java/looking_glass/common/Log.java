@@ -1,4 +1,4 @@
-package looking_glass;
+package looking_glass.common;
 
 // Helper functions that make it easier to log. Log.toOutput and Log.toError
 // look nicer than Utils.logToOutput and Utils.logToError.

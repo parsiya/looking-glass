@@ -9,6 +9,8 @@ import java.sql.Statement;
 import burp.api.montoya.core.Registration;
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.handler.*;
+import looking_glass.common.Log;
+import looking_glass.common.Utils;
 import looking_glass.message.Request;
 import looking_glass.message.Response;
 
@@ -28,10 +30,15 @@ public class Handler implements HttpHandler {
     public static Handler getInstance() throws Exception {
         if (handler == null) {
             handler = new Handler();
-            // Set the connection.
-            handler.setConnection(DB.connect(Utils.getDBPath()));
         }
         return handler;
+    }
+
+    public void closeConnection() throws SQLException {
+        if (connection != null) {
+            connection.close();
+            Log.toOutput("Closed the DB connection.");
+        }
     }
 
     public void setConnection(Connection connection) {
@@ -46,6 +53,7 @@ public class Handler implements HttpHandler {
     // Deregister the handler.
     public void deregister() {
         this.registration.deregister();
+        Log.toOutput("Deregistered the handler.");
     }
 
     // Is the handler registered?

@@ -1,10 +1,11 @@
-package looking_glass;
+package looking_glass.common;
 
 import java.time.Instant;
 import java.util.List;
 
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.http.message.HttpHeader;
+import looking_glass.message.Header;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -68,6 +69,11 @@ public class Utils {
     // Set the database path in the extension's configuration.
     public static void setDBPath(String dbPath) {
         setKey(Constants.DB_PATH_KEY, dbPath);
+    }
+
+    // Returns true if the capture status is "active."
+    public static boolean isCapturing() {
+        return Constants.CAPTURE_STATUS_ACTIVE.equals(getCaptureStatus());
     }
 
     // Set the capture status in the extension's configuration to "active."
