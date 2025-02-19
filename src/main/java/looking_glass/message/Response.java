@@ -6,10 +6,8 @@ import java.util.stream.Collectors;
 import java.time.Instant;
 
 import burp.api.montoya.core.ToolType;
-import burp.api.montoya.http.message.Cookie;
-import burp.api.montoya.http.message.HttpHeader;
-import burp.api.montoya.http.message.params.ParsedHttpParameter;
 import burp.api.montoya.http.message.responses.HttpResponse;
+
 import looking_glass.common.Utils;
 
 public class Response {
@@ -18,11 +16,10 @@ public class Response {
 
     // Custom fields from headers.
 
-    // Burp's response.MimeType returns an enum with only the Burp's recognized types. I want
-    // something freeform here.
+    // Burp's response.MimeType returns an enum with only the Burp's recognized
+    // types (see below). I want something freeform here.
     public String contentType;
-    // response.inferredMimeType returns an enum with some types that Burp has
-    // found. Let's store it in case I need it.
+    // response.inferredMimeType is also stored in case I need it.
     public String inferredContentType;
 
     public int contentLength;
@@ -49,15 +46,15 @@ public class Response {
 
     // Constructor to populate the fields from a HttpResponse object.
     public Response(HttpResponse response, ToolType toolSource) {
-        
+
         // Go through the headers and store them in a list of Header objects.
         List<Header> parsedHeaders = response.headers().stream()
                 .map(header -> new Header(header.name(), header.value()))
                 .collect(Collectors.toList());
-        
+
         // Store parsed headers.
         this.headers = parsedHeaders;
-        
+
         this.statusCode = response.statusCode();
         this.reasonPhrase = response.reasonPhrase();
         this.httpVersion = response.httpVersion();
@@ -83,16 +80,20 @@ public class Response {
         String contentLengthHeader = this.getHeader("Content-Length");
         this.contentLength = (contentLengthHeader != null) ? Integer.parseInt(contentLengthHeader) : 0;
 
-        // Set cookies.
-        this.cookies = response.cookies();
+        // Convert cookies from Burp format to ours.
+        this.cookies = new ArrayList<Cookie>();
+        for (burp.api.montoya.http.message.Cookie burpCookie : response.cookies()) {
+            this.cookies.add(new Cookie(burpCookie));
+        }
+
         // Extract cookie names.
         this.cookieNames = this.cookies.stream()
-            .map(c -> c.name())
-            .collect(Collectors.joining(","));
+                .map(c -> c.name)
+                .collect(Collectors.joining(","));
 
         this.headerNames = this.headers.stream()
-            .map(h -> h.name())
-            .collect(Collectors.joining(","));
+                .map(h -> h.name())
+                .collect(Collectors.joining(","));
     }
 
     public String getHeader(String name) {

@@ -102,7 +102,6 @@ public class Constants {
             // from the JSON blob.
             { "header_names", "TEXT" },
             // inferred content type from Burp.
-            { "inferred_content_type", "TEXT"}
     };
     // Headers skipped in the above:
     // "http_version": How useful?

@@ -133,7 +133,7 @@ public class Handler implements HttpHandler {
                     int requestId = generatedKeys.getInt(1);
 
                     // INSERT INTO response (request_id,
-                    // data,status_code,reason_phrase,content_type,inferred_content_type,content_length,date,cookie_names,tool_source,server,content_security_policy,header_names,inferred_content_type)
+                    // data,status_code,reason_phrase,content_type,inferred_content_type,content_length,date,cookie_names,tool_source,server,content_security_policy,header_names)
                     // VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
                     // Insert data into the response table with the foreign key
@@ -151,7 +151,6 @@ public class Handler implements HttpHandler {
                         insertRes.setString(11, res.server);
                         insertRes.setBoolean(12, res.contentSecurityPolicy);
                         insertRes.setString(13, res.headerNames);
-                        insertRes.setString(14, res.inferredContentType);
                         insertRes.execute();
                     }
                 } else {
