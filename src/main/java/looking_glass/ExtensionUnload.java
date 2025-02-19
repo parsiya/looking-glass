@@ -5,6 +5,7 @@ import burp.api.montoya.extension.ExtensionUnloadingHandler;
 import looking_glass.common.Log;
 
 // Handles the unloading of the extension.
+// It should deregister the handler and close the DB connection.
 public class ExtensionUnload implements ExtensionUnloadingHandler {
 
     @Override

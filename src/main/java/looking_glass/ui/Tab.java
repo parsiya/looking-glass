@@ -5,15 +5,18 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
 import java.util.List;
+import java.util.stream.IntStream;
+
 import javax.swing.*;
 
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.proxy.Proxy;
 import burp.api.montoya.proxy.ProxyHttpRequestResponse;
-
+import looking_glass.Handler;
 import looking_glass.common.Constants;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
+import looking_glass.db.DB;
 import looking_glass.message.Request;
 import looking_glass.message.Response;
 
@@ -50,11 +53,14 @@ public class Tab extends JSplitPane {
 
         JButton clearBtn = new JButton("Clear");
 
-        JButton configBtn = new JButton("Config");
+        JButton configBtn = new JButton("DB Config");
+        configBtn.setToolTipText("Configure the database connection, choose a new one, or stop logging.");
         configBtn.setFont(runBtn.getFont().deriveFont(Font.BOLD));
         configBtn.addActionListener(e -> DBModal.show());
 
-        JButton proxybtn = new JButton("Store Proxy History");
+        JButton proxyBtn = new JButton("Import Proxy History");
+        proxyBtn.setToolTipText("Import the proxy history into the database");
+        proxyBtn.addActionListener(e -> storeProxyHistory());
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
@@ -65,7 +71,7 @@ public class Tab extends JSplitPane {
         buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         buttonPanel.add(clearBtn);
         buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
-        buttonPanel.add(proxybtn);
+        buttonPanel.add(proxyBtn);
         buttonPanel.add(Box.createHorizontalGlue());
         buttonPanel.add(configBtn);
         buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
@@ -106,42 +112,34 @@ public class Tab extends JSplitPane {
         Proxy proxy = Utils.api().proxy();
         List<ProxyHttpRequestResponse> history = proxy.history();
 
+        Log.toOutput("Storing the proxy history in the DB.");
+
         // Go through the proxy history.
-        for (ProxyHttpRequestResponse item : history) {
+        IntStream.range(0, history.size()).forEach(i -> {
+            ProxyHttpRequestResponse item = history.get(i);
             Request req = new Request(item.finalRequest(), item.annotations(), ToolType.PROXY);
             Response res = new Response(item.originalResponse(), ToolType.PROXY);
 
-            // Convert the request to JSON.
-            String requestJson = Utils.toJson(req);
-            String responseJson = Utils.toJson(res);
+            // Store the request and responses in the DB.
 
-            // Store the request in the DB and get the primary key for it.
-
-        }
-
-        // ProxyHttpRequestResponse firstItem = history.get();
-        // if (firstItem != null) {
-        // Request req = new Request(firstItem.finalRequest(), firstItem.annotations(),
-        // ToolType.PROXY);
-        // // Convert the request to JSON.
-        // String requestJson = Utils.toJson(req);
-        // Log.toOutput(requestJson);
-        // }
-        // // Go through the proxy history.
-        // for (ProxyHttpRequestResponse item : history) {
-        // // What's in the ~~box~~ request?
-        // Request req = new Request(item.finalRequest(), item.annotations(),
-        // ToolType.PROXY);
-        // logging.logToOutput("HashCode for request:" +
-        // item.finalRequest().hashCode());
-        // // item.originalResponse() might be null of requests that did not get a
-        // // response.
-        // // Only process if it's not null.
-        // if (item.originalResponse() != null) {
-        // Response res = new Response(item.originalResponse(), ToolType.PROXY);
-        // logging.logToOutput("HashCode for response:" +
-        // item.originalResponse().hashCode());
-        // }
-        // }
+            // Get an instance of Handler, which has the DB connection.
+            Handler handler = Handler.getInstance();
+            // Now the connection might not be established. If so, we show the
+            // DB modal so the user can choose a DB and make a connection.
+            while (handler.getConnection() == null) {
+                DBModal.show();
+            }
+            // Hopefully, the user has finally chosen a DB and the connection is
+            // populated.
+            try {
+                int reqId = DB.insertRequest(req, handler.getConnection());
+                DB.insertResponse(res, handler.getConnection(), reqId);
+            } catch (Exception e) {
+                Log.toError(e.getMessage());
+                Log.toError(String.format("Stored %d pairs in the DB before the error.", i));
+                return;
+            }
+        });
+        Log.toOutput(String.format("Proxy History successfully imported. Stored %d pairs in the DB.", history.size()));
     }
 }

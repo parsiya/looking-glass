@@ -7,11 +7,11 @@ import java.sql.Connection;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-import looking_glass.DB;
 import looking_glass.Handler;
 import looking_glass.common.Constants;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
+import looking_glass.db.DB;
 
 public class DBModal {
 
@@ -19,21 +19,21 @@ public class DBModal {
     // "Choose a new one" and "Pause capture".
     private static void twoOptions(String message) {
         // Take the last two button names.
-        String[] options = new String[] {Constants.DB_MODAL_OPTIONS[1], Constants.DB_MODAL_OPTIONS[2]};
+        String[] options = new String[] { Constants.DB_MODAL_OPTIONS[1], Constants.DB_MODAL_OPTIONS[2] };
 
         // Get burp frame, we will set it as a the parent of the modal.
         Component burpFrame = Utils.api().userInterface().swingUtils().suiteFrame();
 
         // Show the modal.
         int ret = JOptionPane.showOptionDialog(
-                burpFrame,                  // Parent component
-                message,                    // Message
-                "Choose a new DB",    // Title
-                JOptionPane.YES_NO_OPTION,  // Option type
-                JOptionPane.PLAIN_MESSAGE,  // Message type
-                null,                  // Icon
-                options,                    // Options
-                JOptionPane.NO_OPTION       // Initial value is "pause logging"
+                burpFrame, // Parent component
+                message, // Message
+                "Choose a new DB", // Title
+                JOptionPane.YES_NO_OPTION, // Option type
+                JOptionPane.PLAIN_MESSAGE, // Message type
+                null, // Icon
+                options, // Options
+                JOptionPane.NO_OPTION // Initial value is "pause logging"
         );
 
         // Process the options.
@@ -44,7 +44,7 @@ public class DBModal {
                 break;
             // "Pause capture"
             case JOptionPane.NO_OPTION:
-            // Also pause capture if the user closes the dialog.
+                // Also pause capture if the user closes the dialog.
             default:
                 pauseCapture();
         }
@@ -58,14 +58,14 @@ public class DBModal {
 
         // Show the modal.
         int ret = JOptionPane.showOptionDialog(
-                burpFrame,                          // Parent component
-                message,                            // Message
-                "DB Options",                 // Title
-                JOptionPane.YES_NO_CANCEL_OPTION,   // Option type
-                JOptionPane.PLAIN_MESSAGE,          // Message type
-                null,                          // Icon
-                Constants.DB_MODAL_OPTIONS,         // Options
-                JOptionPane.NO_OPTION               // Initial value is "pause logging"
+                burpFrame, // Parent component
+                message, // Message
+                "DB Options", // Title
+                JOptionPane.YES_NO_CANCEL_OPTION, // Option type
+                JOptionPane.PLAIN_MESSAGE, // Message type
+                null, // Icon
+                Constants.DB_MODAL_OPTIONS, // Options
+                JOptionPane.NO_OPTION // Initial value is "pause logging"
         );
 
         // Process the options.
@@ -81,7 +81,7 @@ public class DBModal {
                 break;
             // "Pause capture"
             case JOptionPane.CANCEL_OPTION:
-            // Also pause capture if the user closes the dialog.
+                // Also pause capture if the user closes the dialog.
             default:
                 pauseCapture();
         }
@@ -98,8 +98,8 @@ public class DBModal {
             // Try to connect to the DB.
             Log.toOutput("Checking the DB connection to: " + dbPath);
             try {
-                Connection connect = DB.connect(dbPath);
-                connect.close(); // Close the connection, we will make it again later.
+                Connection conn = DB.connect(dbPath);
+                conn.close(); // Close the connection, we will make it again later.
                 threeOptions("Current DB: " + dbPath);
             } catch (Exception e) {
                 Log.toError(e.getMessage());
@@ -127,7 +127,8 @@ public class DBModal {
     private static void chooseNewDB() {
 
         String newDB = selectDBFile();
-        // Keep showing the file chooser dialog until a valid file is selected or the dialog is canceled.
+        // Keep showing the file chooser dialog until a valid file is selected or the
+        // dialog is canceled.
         while (newDB == null) {
             newDB = selectDBFile();
         }
