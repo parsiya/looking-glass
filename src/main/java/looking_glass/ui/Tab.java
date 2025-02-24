@@ -1,6 +1,7 @@
 package looking_glass.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
@@ -52,6 +53,7 @@ public class Tab extends JSplitPane {
         JButton saveBtn = new JButton("Save");
 
         JButton clearBtn = new JButton("Clear");
+        clearBtn.addActionListener(e -> test1());
 
         JButton configBtn = new JButton("DB Config");
         configBtn.setToolTipText("Configure the database connection, choose a new one, or stop logging.");
@@ -104,13 +106,21 @@ public class Tab extends JSplitPane {
         this.setRightComponent(resultsSplitPane);
 
         // Apply the Burp them to the UI.
-        Utils.api().userInterface().applyThemeToComponent(this);
+        Utils.applyBurpStyle(this);
     }
 
     public static void storeProxyHistory() {
         // Get the proxy history.
         Proxy proxy = Utils.api().proxy();
         List<ProxyHttpRequestResponse> history = proxy.history();
+
+        // Return if history is empty.
+        if (history.isEmpty()) {
+            // Show a message box.
+            Utils.msgBox(Utils.burpFrame(), "Proxy history is empty.", "Error");
+            Log.toOutput("Proxy history is empty.");
+            return;
+        }
 
         Log.toOutput("Storing the proxy history in the DB.");
 
@@ -141,5 +151,10 @@ public class Tab extends JSplitPane {
             }
         });
         Log.toOutput(String.format("Proxy History successfully imported. Stored %d pairs in the DB.", history.size()));
+    }
+
+    public static void test1() {
+        ConfigFrame myFrame = new ConfigFrame();
+        myFrame.setVisible(true);
     }
 }

@@ -1,11 +1,14 @@
 package looking_glass.common;
 
+import java.awt.Component;
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.http.message.HttpHeader;
+
 import looking_glass.message.Header;
 
 import com.google.gson.Gson;
@@ -36,11 +39,6 @@ public class Utils {
                 .orElse(null);
     }
 
-    // Returns a comma separated string of names of the list. This list 
-    // String headerNames = list.stream()
-    // .map(h -> h.name())
-    // .collect(Collectors.joining(", "));
-
     // Convert a string containing an HTTP date to a java.time.Instant.
     public static Instant parseHttpDate(String date) {
         return DateUtils.parseStandardDate(date);
@@ -55,6 +53,9 @@ public class Utils {
                 .create();
         return gson.toJson(obj);
     }
+
+    // -----------
+    // Burp config utilities
 
     // Return the value of a key from the extension's configuration.
     public static String getKey(String key) {
@@ -94,5 +95,24 @@ public class Utils {
     // Get the capture status from the extension's configuration.
     public static String getCaptureStatus() {
         return getKey(Constants.CAPTURE_STATUS_KEY);
+    }
+
+    // -----------
+    // Java Swing utilities
+
+    // Return the Burp frame to use in Swing.
+    public static Component burpFrame() {
+        return api().userInterface().swingUtils().suiteFrame();
+    }
+
+    public static void msgBox(final Component parent, final String message, final String title) {
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(parent, message, title, JOptionPane.INFORMATION_MESSAGE);
+        });
+    }
+
+    // Apply Burp look and feel to a component.
+    public static void applyBurpStyle(Component component) {
+        api().userInterface().applyThemeToComponent(component);
     }
 }

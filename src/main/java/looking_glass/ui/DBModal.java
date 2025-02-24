@@ -6,6 +6,7 @@ import java.sql.Connection;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import looking_glass.Handler;
 import looking_glass.common.Constants;
@@ -22,69 +23,73 @@ public class DBModal {
         String[] options = new String[] { Constants.DB_MODAL_OPTIONS[1], Constants.DB_MODAL_OPTIONS[2] };
 
         // Get burp frame, we will set it as a the parent of the modal.
-        Component burpFrame = Utils.api().userInterface().swingUtils().suiteFrame();
+        Component burpFrame = Utils.burpFrame();
 
-        // Show the modal.
-        int ret = JOptionPane.showOptionDialog(
-                burpFrame, // Parent component
-                message, // Message
-                "Choose a new DB", // Title
-                JOptionPane.YES_NO_OPTION, // Option type
-                JOptionPane.PLAIN_MESSAGE, // Message type
-                null, // Icon
-                options, // Options
-                JOptionPane.NO_OPTION // Initial value is "pause logging"
-        );
+        SwingUtilities.invokeLater(() -> {
+            // Show the modal.
+            int ret = JOptionPane.showOptionDialog(
+                    burpFrame, // Parent component
+                    message, // Message
+                    "Choose a new DB", // Title
+                    JOptionPane.YES_NO_OPTION, // Option type
+                    JOptionPane.PLAIN_MESSAGE, // Message type
+                    null, // Icon
+                    options, // Options
+                    JOptionPane.NO_OPTION // Initial value is "pause logging"
+            );
 
-        // Process the options.
-        switch (ret) {
-            // "Choose a new file"
-            case JOptionPane.YES_OPTION:
-                chooseNewDB();
-                break;
-            // "Pause capture"
-            case JOptionPane.NO_OPTION:
-                // Also pause capture if the user closes the dialog.
-            default:
-                pauseCapture();
-        }
+            // Process the options.
+            switch (ret) {
+                // "Choose a new file"
+                case JOptionPane.YES_OPTION:
+                    chooseNewDB();
+                    break;
+                // "Pause capture"
+                case JOptionPane.NO_OPTION:
+                    // Also pause capture if the user closes the dialog.
+                default:
+                    pauseCapture();
+            }
+        });
     }
 
     // Show the modal with three options.
     // "Use the file", "Choose a new one", and "Pause capture".
     private static void threeOptions(String message) {
         // Get burp frame, we will set it as a the parent of the modal.
-        Component burpFrame = Utils.api().userInterface().swingUtils().suiteFrame();
+        final Component burpFrame = Utils.burpFrame();
 
-        // Show the modal.
-        int ret = JOptionPane.showOptionDialog(
-                burpFrame, // Parent component
-                message, // Message
-                "DB Options", // Title
-                JOptionPane.YES_NO_CANCEL_OPTION, // Option type
-                JOptionPane.PLAIN_MESSAGE, // Message type
-                null, // Icon
-                Constants.DB_MODAL_OPTIONS, // Options
-                JOptionPane.NO_OPTION // Initial value is "pause logging"
-        );
+        SwingUtilities.invokeLater(() -> {
+            // Show the modal.
+            int ret = JOptionPane.showOptionDialog(
+                    burpFrame, // Parent component
+                    message, // Message
+                    "DB Options", // Title
+                    JOptionPane.YES_NO_CANCEL_OPTION, // Option type
+                    JOptionPane.PLAIN_MESSAGE, // Message type
+                    null, // Icon
+                    Constants.DB_MODAL_OPTIONS, // Options
+                    JOptionPane.NO_OPTION // Initial value is "pause logging"
+            );
 
-        // Process the options.
-        switch (ret) {
-            // "Use the file"
-            case JOptionPane.YES_OPTION:
-                // Do nothing, use the same file.
-                Log.toOutput("Keep using the current DB: " + Utils.getDBPath());
-                break;
-            // "Choose a new one"
-            case JOptionPane.NO_OPTION:
-                chooseNewDB();
-                break;
-            // "Pause capture"
-            case JOptionPane.CANCEL_OPTION:
-                // Also pause capture if the user closes the dialog.
-            default:
-                pauseCapture();
-        }
+            // Process the options.
+            switch (ret) {
+                // "Use the file"
+                case JOptionPane.YES_OPTION:
+                    // Do nothing, use the same file.
+                    Log.toOutput("Keep using the current DB: " + Utils.getDBPath());
+                    break;
+                // "Choose a new one"
+                case JOptionPane.NO_OPTION:
+                    chooseNewDB();
+                    break;
+                // "Pause capture"
+                case JOptionPane.CANCEL_OPTION:
+                    // Also pause capture if the user closes the dialog.
+                default:
+                    pauseCapture();
+            }
+        });
     }
 
     public static void show() {
@@ -149,31 +154,37 @@ public class DBModal {
 
     // Opens a file chooser dialog to select a file.
     private static String selectDBFile() {
-        // Create a file chooser and set the file extension filter.
-        DBFileChooser fileChooser = new DBFileChooser();
+        final String[] filePath = new String[1];
 
-        // Show the file chooser dialog
-        int returnVal = fileChooser.show(null);
+        SwingUtilities.invokeLater(() -> {
+            // Create a file chooser and set the file extension filter.
+            DBFileChooser fileChooser = new DBFileChooser();
 
-        // Check if a file was selected
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            // Get the selected file
-            File file = fileChooser.getSelectedFile();
+            // Show the file chooser dialog
+            int returnVal = fileChooser.show(null);
 
-            // If the file doesn't exist, get the path.
-            if (!file.exists()) {
-                Log.toOutput("DB doesn't exist, creating a new DB at: " + file.getAbsolutePath());
+            // Check if a file was selected
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                // Get the selected file
+                File file = fileChooser.getSelectedFile();
+
+                // If the file doesn't exist, get the path.
+                if (!file.exists()) {
+                    Log.toOutput("DB doesn't exist, creating a new DB at: " + file.getAbsolutePath());
+                }
+                try {
+                    // Store the file path in the extension's configuration.
+                    Utils.setDBPath(file.getAbsolutePath());
+                    filePath[0] = file.getAbsolutePath();
+
+                } catch (Exception e) {
+                    Log.toError("Error creating DB: " + e.getMessage());
+                    filePath[0] = null;
+                }
+            } else {
+                filePath[0] = null;
             }
-            try {
-                // Store the file path in the extension's configuration.
-                Utils.setDBPath(file.getAbsolutePath());
-                return file.getAbsolutePath();
-
-            } catch (Exception e) {
-                Log.toError("Error creating DB: " + e.getMessage());
-                return null;
-            }
-        }
-        return null;
+        });
+        return filePath[0];
     }
 }
