@@ -14,7 +14,6 @@ import burp.api.montoya.core.ToolType;
 import burp.api.montoya.proxy.Proxy;
 import burp.api.montoya.proxy.ProxyHttpRequestResponse;
 import looking_glass.Handler;
-import looking_glass.common.Constants;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
 import looking_glass.db.DB;
@@ -154,7 +153,7 @@ public class Tab extends JSplitPane {
     }
 
     public static void test1() {
-        ConfigFrame myFrame = new ConfigFrame();
-        myFrame.setVisible(true);
+        ConfigFrame myFrame = ConfigFrame.getInstance();
+        myFrame.display();
     }
 }

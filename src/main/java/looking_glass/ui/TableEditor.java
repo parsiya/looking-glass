@@ -4,7 +4,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 import looking_glass.common.Log;
-import looking_glass.common.Utils;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -21,16 +20,11 @@ public class TableEditor extends JPanel {
     private String columnName;
     private Component parent;
 
-    // Things to do:
+    // TODO:
     //
-    // 1. parent component in the joptionpane should be set to the burp ui. I
-    // know how to do this, just look at the code that already does it.
-    //
-    // 2. Change the constructor so we can customize this for other uses, for
-    // example we can set the text in the dialogs, the tablemodel and other
-    // things
-    //
-    // 3.
+    // 1. Make this a generic table editor with `Object[]` for the eventual add
+    // to the utilities repo. All the `String[]` can be replaced with
+    // `Object[]`.
 
     public TableEditor(String labelValue, String columnName) {
 
@@ -47,18 +41,19 @@ public class TableEditor extends JPanel {
         this.add(label, BorderLayout.NORTH);
 
         // Create a new table model and table
-        tableModel = new StringTableModel(columnName);
+        tableModel = new BurpTableModel(columnName);
         table = new JTable(tableModel);
 
         // Add the table to a scroll pane
         JScrollPane scrollPane = new JScrollPane(table);
 
-        // Add the scroll pane to the panel
+        // Add the scroll pane to the panel with some space
         this.add(scrollPane, BorderLayout.CENTER);
 
         // Create a new panel for the buttons
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(5, 1));
+        // Grid layout. 5 rows, 1 column, no horizontal space, 5 vertical space.
+        buttonPanel.setLayout(new GridLayout(5, 1, 0, 5));
 
         // Create the buttons
         JButton addBtn = new JButton("Add");
@@ -74,7 +69,7 @@ public class TableEditor extends JPanel {
         pasteBtn.addActionListener(e -> pasteAction());
         loadBtn.addActionListener(e -> loadAction());
 
-        // Add the buttons to the button panel
+        // Add the buttons to the button panel with some space
         buttonPanel.add(addBtn);
         buttonPanel.add(editBtn);
         buttonPanel.add(removeBtn);
@@ -82,6 +77,7 @@ public class TableEditor extends JPanel {
         buttonPanel.add(loadBtn);
 
         this.add(buttonPanel, BorderLayout.WEST);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
     }
 
     private void addAction() {
@@ -120,11 +116,12 @@ public class TableEditor extends JPanel {
             String clipboardText = (String) Toolkit.getDefaultToolkit().getSystemClipboard()
                     .getData(DataFlavor.stringFlavor);
             if (clipboardText != null) {
-                tableModel.addRow(new String[]{clipboardText});
+                tableModel.addRow(new String[] { clipboardText });
             }
         } catch (UnsupportedFlavorException | IOException e) {
             // Display the error message.
-            JOptionPane.showMessageDialog(null, "Clipboard error " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Clipboard error " + e.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
             Log.toError("Clipboard error " + e.getMessage());
         }
     }
@@ -145,5 +142,18 @@ public class TableEditor extends JPanel {
                 Log.toError("Error reading file: " + e.getMessage());
             }
         }
+    }
+
+    // Return the data in the table. Note we might have an issue if we store
+    // other objects there. Otherwise, we should return Object[].
+    public String[] getData() {
+        int rows = tableModel.getRowCount();
+        String[] data = new String[rows];
+
+        for (int i = 0; i < rows; i++) {
+            data[i] = (String) tableModel.getValueAt(i, 0);
+        }
+
+        return data;
     }
 }

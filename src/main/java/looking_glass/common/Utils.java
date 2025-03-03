@@ -106,9 +106,7 @@ public class Utils {
     }
 
     public static void msgBox(final Component parent, final String message, final String title) {
-        SwingUtilities.invokeLater(() -> {
-            JOptionPane.showMessageDialog(parent, message, title, JOptionPane.INFORMATION_MESSAGE);
-        });
+        JOptionPane.showMessageDialog(parent, message, title, JOptionPane.INFORMATION_MESSAGE);
     }
 
     // Apply Burp look and feel to a component.

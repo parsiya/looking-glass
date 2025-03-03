@@ -3,12 +3,9 @@ package looking_glass.common;
 public class Constants {
     public static final String EXTENSION_NAME = "Looking Glass";
 
-    // The three button labels for the DB modal.
-    public static final String[] DB_MODAL_OPTIONS = {
-            "Use the file", "Choose a new one", "Pause capture"
-    };
-
-    // Extension configuration strings.
+    // --------------------------------------------------
+    // Extension configuration strings
+    // --------------------------------------------------
 
     // The key for the DB path.
     public static final String DB_PATH_KEY = "db_path";
@@ -19,7 +16,9 @@ public class Constants {
     // Value of the capture status key when the extension is not capturing.
     public static final String CAPTURE_STATUS_INACTIVE = "inactive";
 
-    // SQL strings.
+    // --------------------------------------------------
+    // SQL strings and field definitions
+    // --------------------------------------------------
 
     // Create the request table if it doesn't exist.
     // The format string adds a `,` after `data JSONB`.
@@ -106,4 +105,25 @@ public class Constants {
     // Headers skipped in the above:
     // "http_version": How useful?
     // "Access-Control-*" headers.
+
+    // --------------------------------------------------
+    // UI Text
+    // --------------------------------------------------
+
+    // The three button labels for the DB modal.
+    public static final String[] DB_MODAL_OPTIONS = {
+            "Use the file", "Choose a new one", "Pause capture"
+    };
+
+    // Config Frame labels.
+    // --------------------------------
+
+    // Config frame name.
+    public static final String CONFIG_FRAME_NAME = "Looking Glass Configuration";
+    // Include and exclude table names.
+    public static final String INCLUDE_TABLE_NAME = "Include";
+    public static final String EXCLUDE_TABLE_NAME = "Exclude";
+    // Include and exclude table column names.
+    public static final String INCLUDE_EXCLUDE_TABLE_COLUMN_NAME = "Host";
+
 }
