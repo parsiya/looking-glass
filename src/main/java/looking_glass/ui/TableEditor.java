@@ -12,13 +12,55 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Vector;
 
 public class TableEditor extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
     private JLabel label;
     private String columnName;
-    private Component parent;
+
+    public JTable getTable() {
+        return table;
+    }
+
+    public void setTable(JTable table) {
+        this.table = table;
+    }
+
+    public DefaultTableModel getTableModel() {
+        return tableModel;
+    }
+
+    public void setTableModel(DefaultTableModel tableModel) {
+        this.tableModel = tableModel;
+    }
+
+    public JLabel getLabel() {
+        return label;
+    }
+
+    public void setLabel(JLabel label) {
+        this.label = label;
+    }
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
+    }
+
+    public Vector<Vector> getData() {
+        return tableModel.getDataVector();
+    }
+    
+    public void setData(Vector<Vector> tableData) {
+        tableModel.setDataVector(tableData, new Vector<String>() {{
+            add(columnName);
+        }});
+    }
 
     // TODO:
     //
@@ -27,9 +69,6 @@ public class TableEditor extends JPanel {
     // `Object[]`.
 
     public TableEditor(String labelValue, String columnName) {
-
-        // Set parent to Burp frame.
-        parent = this;
 
         this.setLayout(new BorderLayout());
 
@@ -83,7 +122,7 @@ public class TableEditor extends JPanel {
     private void addAction() {
         String dialogTitle = "Add " + columnName;
         String dialogLabel = "Enter " + columnName + " :";
-        String input = JOptionPane.showInputDialog(parent, dialogLabel, dialogTitle, JOptionPane.QUESTION_MESSAGE);
+        String input = JOptionPane.showInputDialog(this, dialogLabel, dialogTitle, JOptionPane.QUESTION_MESSAGE);
         if (input != null && !input.isEmpty()) {
             tableModel.addRow(new String[] { input });
         }
@@ -93,7 +132,7 @@ public class TableEditor extends JPanel {
         int selectedRow = table.getSelectedRow();
         if (selectedRow != -1) {
             String oldValue = (String) tableModel.getValueAt(selectedRow, 0);
-            String newValue = (String) JOptionPane.showInputDialog(parent, "Enter new value:", "Edit Item",
+            String newValue = (String) JOptionPane.showInputDialog(this, "Enter new value:", "Edit Item",
                     JOptionPane.QUESTION_MESSAGE, null, null, oldValue);
             if (newValue != null) {
                 tableModel.setValueAt(newValue, selectedRow, 0);
@@ -142,18 +181,5 @@ public class TableEditor extends JPanel {
                 Log.toError("Error reading file: " + e.getMessage());
             }
         }
-    }
-
-    // Return the data in the table. Note we might have an issue if we store
-    // other objects there. Otherwise, we should return Object[].
-    public String[] getData() {
-        int rows = tableModel.getRowCount();
-        String[] data = new String[rows];
-
-        for (int i = 0; i < rows; i++) {
-            data[i] = (String) tableModel.getValueAt(i, 0);
-        }
-
-        return data;
     }
 }

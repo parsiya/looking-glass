@@ -100,11 +100,11 @@ public class DB {
     // (data,url,method,path,host,port,is_https,notes,tool_source,content_type,
     // content_length,origin,referer,parameter_names,cookie_names,header_names)
     // VALUES (?, ...);
-    public static int insertRequest(Request req, Connection connection) throws SQLException {
-        String reqString = Utils.toJson(req);
+    public static int insertRequest(Request req, Connection connection) throws Exception {
         try (PreparedStatement insertReq = connection.prepareStatement(
                 DB.insertRequest,
                 Statement.RETURN_GENERATED_KEYS)) {
+            String reqString = Utils.toJson(req);
             // Remember, index starts at 1.
             insertReq.setString(1, reqString); // Request as JSON.
             insertReq.setString(2, req.url);
@@ -144,10 +144,11 @@ public class DB {
     // content_length,date,cookie_names,tool_source,server,
     // content_security_policy,header_names)
     // VALUES (?, ...);
-    public static void insertResponse(Response res, Connection connection, int requestId) throws SQLException {
-        String resString = Utils.toJson(res);
+    public static void insertResponse(Response res, Connection connection, int requestId) throws Exception {
+        
         // Insert data into the response table with the foreign key
         try (PreparedStatement insertRes = connection.prepareStatement(DB.insertResponse)) {
+            String resString = Utils.toJson(res);
             insertRes.setInt(1, requestId);
             insertRes.setString(2, resString);
             insertRes.setInt(3, res.statusCode);

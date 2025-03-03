@@ -19,6 +19,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import looking_glass.ConfigData;
+import looking_glass.common.Constants;
+import looking_glass.common.Log;
 import looking_glass.common.Utils;
 
 public class ConfigFrame extends JDialog {
@@ -56,6 +59,7 @@ public class ConfigFrame extends JDialog {
     private TableEditor include, exclude;
     private JTextField showTextField, hideTextField, sizeTextField;
     private LabeledCheckBox sizeCheckBox, showCheckBox, hideCheckBox;
+    private LabeledCheckBox[] mimeTypeCheckBoxes;
 
     // We want the extension to only create one instance of this frame.
     private static ConfigFrame instance;
@@ -68,7 +72,7 @@ public class ConfigFrame extends JDialog {
     }
 
     private ConfigFrame() {
-        super((Frame)Utils.burpFrame(), CONFIG_FRAME_NAME);
+        super((Frame) Utils.burpFrame(), CONFIG_FRAME_NAME);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         // Use GridBagLayout for better control.
         this.setLayout(new GridBagLayout());
@@ -115,8 +119,11 @@ public class ConfigFrame extends JDialog {
         gridPanel.setLayout(new GridLayout(4, 2, 10, 10));
 
         // Add 8 elements to the grid panel
-        for (String label : MIME_LABELS) {
-            gridPanel.add(new LabeledCheckBox(label));
+        mimeTypeCheckBoxes = new LabeledCheckBox[MIME_LABELS.length];
+        for (int i = 0; i < MIME_LABELS.length; i++) {
+            mimeTypeCheckBoxes[i] = new LabeledCheckBox(MIME_LABELS[i]);
+            // Add the checkbox to your form
+            gridPanel.add(mimeTypeCheckBoxes[i]);
         }
 
         // Add the grid panel to the flow wrapper
@@ -160,23 +167,51 @@ public class ConfigFrame extends JDialog {
         this.hideTextField = new JTextField();
 
         // Like the proxy filter, if one checkbox is selected, the other is disabled.
-        showCheckBox.addActionListener(e -> {
+        showCheckBox.getCheckBox().addActionListener(e -> {
             if (showCheckBox.isSelected()) {
                 hideCheckBox.setSelected(false);
                 hideCheckBox.setEnabled(false);
+                hideTextField.setEnabled(false);
             } else {
                 hideCheckBox.setEnabled(true);
                 hideTextField.setEnabled(true);
             }
         });
+        // This is to make the label do the same.
+        showCheckBox.getLabel().addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (showCheckBox.isSelected()) {
+                    hideCheckBox.setSelected(false);
+                    hideCheckBox.setEnabled(false);
+                    hideTextField.setEnabled(false);
+                } else {
+                    hideCheckBox.setEnabled(true);
+                    hideTextField.setEnabled(true);
+                }
+            }
+        });
 
-        hideCheckBox.addActionListener(e -> {
+        hideCheckBox.getCheckBox().addActionListener(e -> {
             if (hideCheckBox.isSelected()) {
                 showCheckBox.setSelected(false);
                 showCheckBox.setEnabled(false);
+                showTextField.setEnabled(false);
             } else {
                 showCheckBox.setEnabled(true);
                 showTextField.setEnabled(true);
+            }
+        });
+
+        hideCheckBox.getLabel().addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (hideCheckBox.isSelected()) {
+                    showCheckBox.setSelected(false);
+                    showCheckBox.setEnabled(false);
+                    showTextField.setEnabled(false);
+                } else {
+                    showCheckBox.setEnabled(true);
+                    showTextField.setEnabled(true);
+                }
             }
         });
 
@@ -193,8 +228,8 @@ public class ConfigFrame extends JDialog {
         // Cancel button
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(e -> {
-            // Placeholder for cancel action
-            System.out.println("Cancel button clicked");
+            // Close the form.
+            this.dispose();
         });
 
         // Save and close button
@@ -203,8 +238,10 @@ public class ConfigFrame extends JDialog {
         applyBtn.setForeground(Color.WHITE);
         applyBtn.setFont(applyBtn.getFont().deriveFont(Font.BOLD));
         applyBtn.addActionListener(e -> {
-            // Placeholder for save action
-            System.out.println("Save button clicked");
+            Log.toOutput("Apply button clicked.");
+            // Save the config and hide the form.
+            this.save();
+            this.dispose();
         });
 
         // Add buttons to the save panel
@@ -228,6 +265,23 @@ public class ConfigFrame extends JDialog {
 
         this.setPreferredSize(new Dimension(900, 450));
 
+        // Read the value of CONFIG_KEY from the config and if it exists, load it.
+        String json = Utils.getKey(Constants.CONFIG_KEY);
+        if (json != null) {
+            try {
+                ConfigData configData = ConfigData.fromJson(json);
+                if (configData != null) {
+                    this.loadConfigData(configData);
+                }
+            } catch (Exception e) {
+                Log.toError("Config was corrupted: " + e.getMessage());
+                // ZZZ: Load the default config.
+            }
+        } else {
+            // ZZZ: Add default config like Burp.
+            Log.toOutput("No config found. Using default values.");
+        }
+
         // Pack it all up.
         this.pack();
         // Issue: The frame shows big tables and the size becomes correct after
@@ -238,5 +292,60 @@ public class ConfigFrame extends JDialog {
 
     public void display() {
         this.setVisible(true);
+    }
+
+    public void save() {
+        Log.toOutput("Inside save");
+        ConfigData configData = new ConfigData();
+
+        // Store include and exclude table data.
+        configData.setIncludeTableData(this.include.getData());
+        configData.setExcludeTableData(this.exclude.getData());
+
+        // Store MIME type filter states.
+        boolean[] mimeTypeStates = new boolean[MIME_LABELS.length];
+        for (int i = 0; i < MIME_LABELS.length; i++) {
+            mimeTypeStates[i] = this.mimeTypeCheckBoxes[i].isSelected();
+        }
+        configData.setMimeTypes(mimeTypeStates);
+
+        // Store filters size, show/hide file extensions.
+        configData.setSizeStatus(this.sizeCheckBox.isSelected());
+        configData.setSizeValue(this.sizeTextField.getText());
+        configData.setShowStatus(this.showCheckBox.isSelected());
+        configData.setShowValue(this.showTextField.getText());
+        configData.setHideStatus(this.hideCheckBox.isSelected());
+        configData.setHideValue(this.hideTextField.getText());
+
+        Log.toOutput("before toJson");
+        // Convert configData to json.
+        String json = "";
+        try {
+            json = configData.toJson();
+        } catch (Exception e) {
+            Log.toError("Error converting config data to JSON: " + e.getMessage());
+        }
+        Log.toOutput("after toJson");
+        // Store it in the config key.
+        Utils.setKey(Constants.CONFIG_KEY, json);
+        Log.toOutput(json);
+    }
+
+    private void loadConfigData(ConfigData configData) {
+        // Load the include and exclude table data.
+        this.include.setData(configData.getIncludeTableData());
+        this.exclude.setData(configData.getExcludeTableData());
+        // Load the MIME type filter states.
+        boolean[] mimeTypeStates = configData.getMimeTypes();
+        for (int i = 0; i < MIME_LABELS.length; i++) {
+            this.mimeTypeCheckBoxes[i].setSelected(mimeTypeStates[i]);
+        }
+        // Load the filters size, show/hide file extensions.
+        this.sizeCheckBox.setSelected(configData.isSizeStatus());
+        this.sizeTextField.setText(configData.getSizeValue());
+        this.showCheckBox.setSelected(configData.isShowStatus());
+        this.showTextField.setText(configData.getShowValue());
+        this.hideCheckBox.setSelected(configData.isHideStatus());
+        this.hideTextField.setText(configData.getHideValue());
     }
 }

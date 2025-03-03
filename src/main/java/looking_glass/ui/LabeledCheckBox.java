@@ -12,6 +12,22 @@ public class LabeledCheckBox extends JPanel {
     private JCheckBox checkBox;
     private JLabel label;
 
+    public JCheckBox getCheckBox() {
+        return checkBox;
+    }
+
+    public void setCheckBox(JCheckBox checkBox) {
+        this.checkBox = checkBox;
+    }
+
+    public JLabel getLabel() {
+        return label;
+    }
+
+    public void setLabel(JLabel label) {
+        this.label = label;
+    }
+
     public LabeledCheckBox(String text) {
         setLayout(new FlowLayout(FlowLayout.LEFT, 10, 0));
 
@@ -27,7 +43,9 @@ public class LabeledCheckBox extends JPanel {
         label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                checkBox.setSelected(!checkBox.isSelected());
+                if (checkBox.isEnabled()) {
+                    checkBox.setSelected(!checkBox.isSelected());
+                }
             }
         });
     }
@@ -46,10 +64,6 @@ public class LabeledCheckBox extends JPanel {
 
     public void setSelected(boolean selected) {
         checkBox.setSelected(selected);
-    }
-
-    public void addActionListener(ActionListener actionListener) {
-        checkBox.addActionListener(actionListener);
     }
 
     @Override

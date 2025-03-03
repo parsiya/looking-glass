@@ -15,6 +15,8 @@ public class Constants {
     public static final String CAPTURE_STATUS_ACTIVE = "active";
     // Value of the capture status key when the extension is not capturing.
     public static final String CAPTURE_STATUS_INACTIVE = "inactive";
+    // Value of the config key.
+    public static final String CONFIG_KEY = "config";
 
     // --------------------------------------------------
     // SQL strings and field definitions
@@ -114,16 +116,4 @@ public class Constants {
     public static final String[] DB_MODAL_OPTIONS = {
             "Use the file", "Choose a new one", "Pause capture"
     };
-
-    // Config Frame labels.
-    // --------------------------------
-
-    // Config frame name.
-    public static final String CONFIG_FRAME_NAME = "Looking Glass Configuration";
-    // Include and exclude table names.
-    public static final String INCLUDE_TABLE_NAME = "Include";
-    public static final String EXCLUDE_TABLE_NAME = "Exclude";
-    // Include and exclude table column names.
-    public static final String INCLUDE_EXCLUDE_TABLE_COLUMN_NAME = "Host";
-
 }

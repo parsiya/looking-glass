@@ -45,13 +45,22 @@ public class Utils {
     }
 
     // Convert a Java object to JSON.
-    public static String toJson(Object obj) {
+    public static String toJson(Object obj) throws Exception {
         Gson gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(Instant.class,
                         (JsonSerializer<Instant>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
                 .create();
         return gson.toJson(obj);
+    }
+
+    // Convert a JSON string to a Java object.
+    public static <T> T fromJson(String json, Class<T> classOfT) throws Exception {
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Instant.class,
+                        (JsonSerializer<Instant>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
+                .create();
+        return gson.fromJson(json, classOfT);
     }
 
     // -----------
