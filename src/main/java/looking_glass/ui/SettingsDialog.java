@@ -19,17 +19,17 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import looking_glass.ConfigData;
+import looking_glass.ExtensionSettings;
 import looking_glass.common.Constants;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
 
-public class ConfigFrame extends JDialog {
+public class SettingsDialog extends JDialog {
 
     // Labels
     // ---------
-    // Config frame name.
-    private static final String CONFIG_FRAME_NAME = "Looking Glass Configuration"; // ZZZ change this.
+    // Settings dialog name.
+    private static final String SETTINGS_FRAME_NAME = "Looking Glass Settings"; // ZZZ change this.
     // Include and exclude table names.
     private static final String INCLUDE_TABLE = "Include";
     private static final String EXCLUDE_TABLE = "Exclude";
@@ -56,30 +56,32 @@ public class ConfigFrame extends JDialog {
     private static final String SHOW_ONLY_LABEL = "Store:";
     private static final String HIDE_LABEL = "Skip:";
 
+    // Buttons
+    private static final String CANCEL_BUTTON = "Cancel";
+    private static final String SAVE_BUTTON = "Apply & Close";
+
     private TableEditor include, exclude;
     private JTextField showTextField, hideTextField, sizeTextField;
     private LabeledCheckBox sizeCheckBox, showCheckBox, hideCheckBox;
     private LabeledCheckBox[] mimeTypeCheckBoxes;
 
-    // We want the extension to only create one instance of this frame.
-    private static ConfigFrame instance;
+    // Issue: I used a singleton instance for the settings dialog, but it is not
+    // working because it kept the changes even after closing the frame so I am
+    // creating a new instance every time instead. This might lead to another
+    // issue that clicking the setting button multiple times will create
+    // multiple instances of the settings dialog.
 
-    public static ConfigFrame getInstance() {
-        if (instance == null) {
-            instance = new ConfigFrame();
-        }
-        return instance;
-    }
+    public SettingsDialog() {
+        super((Frame) Utils.burpFrame(), SETTINGS_FRAME_NAME);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        // Make it a modal so users cannot click Burp until they're done here.
+        this.setModalityType(ModalityType.APPLICATION_MODAL);
 
-    private ConfigFrame() {
-        super((Frame) Utils.burpFrame(), CONFIG_FRAME_NAME);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        // Use GridBagLayout for better control.
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-        // This is simulating a group box to hold the scope. This is designed to
-        // look like the Burp `Target > Scope` tab.
+        // This is simulating a group box to hold the scope. Designed to look
+        // like the Burp `Target > Scope` tab.
         JPanel scopePanel = new JPanel();
         scopePanel.setBorder(BorderFactory.createTitledBorder(SCOPE_PANEL));
         scopePanel.setLayout(new BoxLayout(scopePanel, BoxLayout.Y_AXIS));
@@ -91,7 +93,7 @@ public class ConfigFrame extends JDialog {
         // Add a vertical space between the tables.
         scopePanel.add(Box.createVerticalStrut(10));
         scopePanel.add(exclude);
-        // Add scopePanel to the WEST position
+        // Add scopePanel to the left position.
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.BOTH;
@@ -110,36 +112,35 @@ public class ConfigFrame extends JDialog {
         mimeTypeFilter.setBorder(BorderFactory.createTitledBorder(MIME_TYPE_FILTER_PANEL));
         mimeTypeFilter.setLayout(new BorderLayout());
 
-        // Create a wrapper panel with FlowLayout
+        // Create a wrapper panel with FlowLayout.
         JPanel flowWrapper = new JPanel();
         // flowWrapper.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 10));
 
-        // Create a panel with GridLayout
+        // Create a panel with GridLayout.
         JPanel gridPanel = new JPanel();
         gridPanel.setLayout(new GridLayout(4, 2, 10, 10));
 
-        // Add 8 elements to the grid panel
+        // Add the 8 MIME Type checks to the grid panel.
         mimeTypeCheckBoxes = new LabeledCheckBox[MIME_LABELS.length];
         for (int i = 0; i < MIME_LABELS.length; i++) {
             mimeTypeCheckBoxes[i] = new LabeledCheckBox(MIME_LABELS[i]);
-            // Add the checkbox to your form
+            // Add the checkbox to your form.
             gridPanel.add(mimeTypeCheckBoxes[i]);
         }
 
-        // Add the grid panel to the flow wrapper
+        // Add the grid panel to the flow wrapper.
         flowWrapper.add(gridPanel);
 
-        // Use the flow wrapper as the main panel
+        // Use the flow wrapper as the main panel.
         mimeTypeFilter.add(flowWrapper, BorderLayout.WEST);
 
-        // Skip body by size.
+        // `Skip body by size` group box.
         JPanel sizeFilterPanel = new JPanel();
         sizeFilterPanel.setBorder(BorderFactory.createTitledBorder(SIZE_FILTER_PANEL));
         sizeFilterPanel.setLayout(new GridLayout(1, 1));
         sizeFilterPanel.setBorder(BorderFactory.createCompoundBorder(
                 sizeFilterPanel.getBorder(),
                 BorderFactory.createEmptyBorder(5, 0, 5, 5)));
-
         this.sizeCheckBox = new LabeledCheckBox(SIZE_LABEL);
         sizeTextField = new JTextField();
         sizeFilterPanel.add(sizeCheckBox);
@@ -177,7 +178,7 @@ public class ConfigFrame extends JDialog {
                 hideTextField.setEnabled(true);
             }
         });
-        // This is to make the label do the same.
+        // This is to make clicking the label do the same as above.
         showCheckBox.getLabel().addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (showCheckBox.isSelected()) {
@@ -215,31 +216,29 @@ public class ConfigFrame extends JDialog {
             }
         });
 
-        // Add them to the panel.
+        // Add the two checkboxes to the panel.
         extensionFilterPanel.add(showCheckBox);
         extensionFilterPanel.add(showTextField);
         extensionFilterPanel.add(hideCheckBox);
         extensionFilterPanel.add(hideTextField);
 
-        // Save panel
+        // `Save panel` section.
         JPanel savePanel = new JPanel();
         savePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
-        // Cancel button
-        JButton cancelButton = new JButton("Cancel");
+        // Cancel button.
+        JButton cancelButton = new JButton(CANCEL_BUTTON);
         cancelButton.addActionListener(e -> {
-            // Close the form.
             this.dispose();
         });
 
-        // Save and close button
-        JButton applyBtn = new JButton("Apply & Close");
+        // Save and close button.
+        JButton applyBtn = new JButton(SAVE_BUTTON);
         applyBtn.setBackground(new Color(255, 102, 51));
         applyBtn.setForeground(Color.WHITE);
         applyBtn.setFont(applyBtn.getFont().deriveFont(Font.BOLD));
         applyBtn.addActionListener(e -> {
-            Log.toOutput("Apply button clicked.");
-            // Save the config and hide the form.
+            // Save the settings and close the form.
             this.save();
             this.dispose();
         });
@@ -248,14 +247,15 @@ public class ConfigFrame extends JDialog {
         savePanel.add(cancelButton);
         savePanel.add(applyBtn);
 
+        // Add all the buttons to the filter panel that will be the right part.
         filterPanel.add(mimeTypeFilter);
         filterPanel.add(sizeFilterPanel);
         filterPanel.add(extensionFilterPanel);
-        // Add vertical space before the save panel
+        // Add vertical space before the save panel.
         filterPanel.add(Box.createVerticalStrut(10));
         filterPanel.add(savePanel);
 
-        // Add rightPanel to the EAST position
+        // Add rightPanel to the EAST position.
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.BOTH;
@@ -265,21 +265,21 @@ public class ConfigFrame extends JDialog {
 
         this.setPreferredSize(new Dimension(900, 450));
 
-        // Read the value of CONFIG_KEY from the config and if it exists, load it.
-        String json = Utils.getKey(Constants.CONFIG_KEY);
+        // Read the value of SETTINGS_KEY and load any data (if exists).
+        String json = Utils.getKey(Constants.SETTINGS_KEY);
         if (json != null) {
             try {
-                ConfigData configData = ConfigData.fromJson(json);
-                if (configData != null) {
-                    this.loadConfigData(configData);
+                ExtensionSettings extensionSettings = ExtensionSettings.fromJson(json);
+                if (extensionSettings != null) {
+                    this.loadSettings(extensionSettings);
                 }
             } catch (Exception e) {
-                Log.toError("Config was corrupted: " + e.getMessage());
-                // ZZZ: Load the default config.
+                Log.toError("Extension settings was corrupted: " + e.getMessage());
+                // ZZZ: Load the default setting.
             }
         } else {
-            // ZZZ: Add default config like Burp.
-            Log.toOutput("No config found. Using default values.");
+            // ZZZ: Add default settings like Burp.
+            Log.toOutput("No extension settings found. Using default values.");
         }
 
         // Pack it all up.
@@ -291,61 +291,60 @@ public class ConfigFrame extends JDialog {
     }
 
     public void display() {
+        this.setLocationRelativeTo(Utils.burpFrame());
         this.setVisible(true);
     }
 
     public void save() {
-        Log.toOutput("Inside save");
-        ConfigData configData = new ConfigData();
+        ExtensionSettings settings = new ExtensionSettings();
 
         // Store include and exclude table data.
-        configData.setIncludeTableData(this.include.getData());
-        configData.setExcludeTableData(this.exclude.getData());
+        settings.setIncludeTableData(this.include.getData());
+        settings.setExcludeTableData(this.exclude.getData());
 
         // Store MIME type filter states.
         boolean[] mimeTypeStates = new boolean[MIME_LABELS.length];
         for (int i = 0; i < MIME_LABELS.length; i++) {
             mimeTypeStates[i] = this.mimeTypeCheckBoxes[i].isSelected();
         }
-        configData.setMimeTypes(mimeTypeStates);
+        settings.setMimeTypes(mimeTypeStates);
 
         // Store filters size, show/hide file extensions.
-        configData.setSizeStatus(this.sizeCheckBox.isSelected());
-        configData.setSizeValue(this.sizeTextField.getText());
-        configData.setShowStatus(this.showCheckBox.isSelected());
-        configData.setShowValue(this.showTextField.getText());
-        configData.setHideStatus(this.hideCheckBox.isSelected());
-        configData.setHideValue(this.hideTextField.getText());
+        settings.setSizeStatus(this.sizeCheckBox.isSelected());
+        settings.setSizeValue(this.sizeTextField.getText());
+        settings.setShowStatus(this.showCheckBox.isSelected());
+        settings.setShowValue(this.showTextField.getText());
+        settings.setHideStatus(this.hideCheckBox.isSelected());
+        settings.setHideValue(this.hideTextField.getText());
 
-        Log.toOutput("before toJson");
-        // Convert configData to json.
+        // Convert it to json.
         String json = "";
         try {
-            json = configData.toJson();
+            json = settings.toJson();
         } catch (Exception e) {
-            Log.toError("Error converting config data to JSON: " + e.getMessage());
+            Log.toError("Error converting extension settings to JSON: " + e.getMessage());
+            return;
         }
-        Log.toOutput("after toJson");
-        // Store it in the config key.
-        Utils.setKey(Constants.CONFIG_KEY, json);
-        Log.toOutput(json);
+        // Store it in the settings key.
+        Utils.setKey(Constants.SETTINGS_KEY, json);
     }
 
-    private void loadConfigData(ConfigData configData) {
+    // Loads the settings data into the Settings Dialog.
+    private void loadSettings(ExtensionSettings settings) {
         // Load the include and exclude table data.
-        this.include.setData(configData.getIncludeTableData());
-        this.exclude.setData(configData.getExcludeTableData());
+        this.include.setData(settings.getIncludeTableData());
+        this.exclude.setData(settings.getExcludeTableData());
         // Load the MIME type filter states.
-        boolean[] mimeTypeStates = configData.getMimeTypes();
+        boolean[] mimeTypeStates = settings.getMimeTypes();
         for (int i = 0; i < MIME_LABELS.length; i++) {
             this.mimeTypeCheckBoxes[i].setSelected(mimeTypeStates[i]);
         }
         // Load the filters size, show/hide file extensions.
-        this.sizeCheckBox.setSelected(configData.isSizeStatus());
-        this.sizeTextField.setText(configData.getSizeValue());
-        this.showCheckBox.setSelected(configData.isShowStatus());
-        this.showTextField.setText(configData.getShowValue());
-        this.hideCheckBox.setSelected(configData.isHideStatus());
-        this.hideTextField.setText(configData.getHideValue());
+        this.sizeCheckBox.setSelected(settings.isSizeStatus());
+        this.sizeTextField.setText(settings.getSizeValue());
+        this.showCheckBox.setSelected(settings.isShowStatus());
+        this.showTextField.setText(settings.getShowValue());
+        this.hideCheckBox.setSelected(settings.isHideStatus());
+        this.hideTextField.setText(settings.getHideValue());
     }
 }

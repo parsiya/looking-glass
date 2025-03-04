@@ -4,7 +4,7 @@ public class Constants {
     public static final String EXTENSION_NAME = "Looking Glass";
 
     // --------------------------------------------------
-    // Extension configuration strings
+    // Extension settings strings
     // --------------------------------------------------
 
     // The key for the DB path.
@@ -15,8 +15,8 @@ public class Constants {
     public static final String CAPTURE_STATUS_ACTIVE = "active";
     // Value of the capture status key when the extension is not capturing.
     public static final String CAPTURE_STATUS_INACTIVE = "inactive";
-    // Value of the config key.
-    public static final String CONFIG_KEY = "config";
+    // Value of the settings key.
+    public static final String SETTINGS_KEY = "settings";
 
     // --------------------------------------------------
     // SQL strings and field definitions

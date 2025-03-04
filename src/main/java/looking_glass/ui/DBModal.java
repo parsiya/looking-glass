@@ -89,7 +89,7 @@ public class DBModal {
     }
 
     public static void show() {
-        // Read the DB Path from the extension's configuration.
+        // Read the DB Path from the extension's settings.
         String dbPath = Utils.getDBPath();
 
         // If dbPath is null, show a message to choose a new DB.
@@ -108,7 +108,7 @@ public class DBModal {
             }
         }
 
-        // Now that we've chosen a DB, read it from the extension's configuration.
+        // Now that we've chosen a DB, read it from the extension's settings.
         dbPath = Utils.getDBPath();
 
         // If dbPath is still null, we've paused capture, do not create a connection.
@@ -136,14 +136,14 @@ public class DBModal {
 
         // ZZZ what happens here if we cancel the dialog. Will the result be empty?
         Log.toOutput("Using new DB: " + newDB + ".");
-        // Store the new DB path in the extension's configuration.
+        // Store the new DB path in the extension's settings.
         Utils.setDBPath(newDB);
         // Enable capture.
         Utils.setActiveCaptureStatus();
     }
 
     private static void pauseCapture() {
-        // Store the capture status in the extension's configuration.
+        // Store the capture status in the extension's settings.
         Utils.setInactiveCaptureStatus();
         Log.toOutput("Capture paused.");
     }
@@ -166,7 +166,7 @@ public class DBModal {
                 Log.toOutput("DB doesn't exist, creating a new DB at: " + file.getAbsolutePath());
             }
             try {
-                // Store the file path in the extension's configuration.
+                // Store the file path in the extension's settings.
                 Utils.setDBPath(file.getAbsolutePath());
                 return file.getAbsolutePath();
 

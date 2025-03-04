@@ -6,7 +6,7 @@ import javax.swing.table.DefaultTableModel;
 
 import looking_glass.common.Utils;
 
-public class ConfigData {
+public class ExtensionSettings {
 
     private boolean sizeStatus;
     private boolean showStatus;
@@ -94,7 +94,7 @@ public class ConfigData {
         return Utils.toJson(this);
     }
 
-    public static ConfigData fromJson(String json) throws Exception {
-        return Utils.fromJson(json, ConfigData.class);
+    public static ExtensionSettings fromJson(String json) throws Exception {
+        return Utils.fromJson(json, ExtensionSettings.class);
     }
 }

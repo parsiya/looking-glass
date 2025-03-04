@@ -22,6 +22,16 @@ import looking_glass.message.Response;
 
 public class Tab extends JSplitPane {
 
+    private static final String RUN_BUTTON = "Run";
+    private static final String SAVE_BUTTON = "Save";
+    private static final String CLEAR_BUTTON = "Clear";
+    private static final String DB_BUTTON = "Select DB";
+    private static final String DB_BUTTON_TOOLTIP = "Configure the database connection, choose a new one, or stop logging.";
+    private static final String PROXY_BUTTON_TEXT = "Import Proxy History";
+    private static final String PROXY_BUTTON_TOOLTIP = "Import the proxy history into the database";
+    private static final String SETTINGS_BUTTON = "Extension Settings";
+    private static final String SETTINGS_BUTTON_TOOLTIP = "Looking Glass settings";
+
     private JList<String> queryList;
     private JScrollPane queryListScrollPane;
     private JTextArea queryTextArea;
@@ -43,25 +53,33 @@ public class Tab extends JSplitPane {
         queryListScrollPane = new JScrollPane(queryList);
 
         // Create two buttons on top of each other.
-        JButton runBtn = new JButton("Run");
+        JButton runBtn = new JButton(RUN_BUTTON);
         // Color of Burp Repeater's "Send" button.
         runBtn.setBackground(new Color(255, 102, 51));
         runBtn.setForeground(Color.WHITE);
         runBtn.setFont(runBtn.getFont().deriveFont(Font.BOLD));
 
-        JButton saveBtn = new JButton("Save");
+        JButton saveBtn = new JButton(SAVE_BUTTON);
 
-        JButton clearBtn = new JButton("Clear");
-        clearBtn.addActionListener(e -> test1());
+        JButton clearBtn = new JButton(CLEAR_BUTTON);
+        clearBtn.addActionListener(e -> clearBtnAction());
 
-        JButton configBtn = new JButton("DB Config");
-        configBtn.setToolTipText("Configure the database connection, choose a new one, or stop logging.");
-        configBtn.setFont(runBtn.getFont().deriveFont(Font.BOLD));
-        configBtn.addActionListener(e -> DBModal.show());
+        JButton dbBtn = new JButton(DB_BUTTON);
+        dbBtn.setToolTipText(DB_BUTTON_TOOLTIP);
+        dbBtn.setFont(dbBtn.getFont().deriveFont(Font.BOLD));
+        dbBtn.addActionListener(e -> DBModal.show());
 
-        JButton proxyBtn = new JButton("Import Proxy History");
-        proxyBtn.setToolTipText("Import the proxy history into the database");
-        proxyBtn.addActionListener(e -> storeProxyHistory());
+        JButton importProxyBtn = new JButton(PROXY_BUTTON_TEXT);
+        importProxyBtn.setToolTipText(PROXY_BUTTON_TOOLTIP);
+        importProxyBtn.addActionListener(e -> importProxyHistory());
+
+        JButton settingsBtn = new JButton(SETTINGS_BUTTON);
+        settingsBtn.setToolTipText(SETTINGS_BUTTON_TOOLTIP);
+        settingsBtn.setFont(settingsBtn.getFont().deriveFont(Font.BOLD));
+        settingsBtn.addActionListener(e -> {
+            SettingsDialog myFrame = new SettingsDialog();
+            myFrame.display();
+        });
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
@@ -72,9 +90,11 @@ public class Tab extends JSplitPane {
         buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         buttonPanel.add(clearBtn);
         buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
-        buttonPanel.add(proxyBtn);
+        buttonPanel.add(importProxyBtn);
         buttonPanel.add(Box.createHorizontalGlue());
-        buttonPanel.add(configBtn);
+        buttonPanel.add(settingsBtn);
+        buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonPanel.add(dbBtn);
         buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
 
         // Create the text area.
@@ -108,7 +128,7 @@ public class Tab extends JSplitPane {
         Utils.applyBurpStyle(this);
     }
 
-    public static void storeProxyHistory() {
+    public static void importProxyHistory() {
         // Get the proxy history.
         Proxy proxy = Utils.api().proxy();
         List<ProxyHttpRequestResponse> history = proxy.history();
@@ -144,16 +164,20 @@ public class Tab extends JSplitPane {
                 int reqId = DB.insertRequest(req, handler.getConnection());
                 DB.insertResponse(res, handler.getConnection(), reqId);
             } catch (Exception e) {
+                String errorResult = String.format("Stored %d pairs in the DB before the error. Check the error log.", i);
+                Utils.msgBox(Utils.burpFrame(), errorResult, "Error");
+                Log.toError(String.format("Stored %d pairs in the DB before the following error.", i));
                 Log.toError(e.getMessage());
-                Log.toError(String.format("Stored %d pairs in the DB before the error.", i));
                 return;
             }
         });
-        Log.toOutput(String.format("Proxy History successfully imported. Stored %d pairs in the DB.", history.size()));
+        String importResult = String.format("Proxy History successfully imported. Stored %d pairs in the DB.", history.size());
+        Utils.msgBox(Utils.burpFrame(), importResult, "Success");
+        Log.toOutput(importResult);
     }
 
-    public static void test1() {
-        ConfigFrame myFrame = ConfigFrame.getInstance();
-        myFrame.display();
+    public static void clearBtnAction() {
+        // ZZZ: TODO
+        // Do nothing for now.
     }
 }

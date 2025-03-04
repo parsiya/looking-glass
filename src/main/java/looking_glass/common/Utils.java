@@ -64,24 +64,24 @@ public class Utils {
     }
 
     // -----------
-    // Burp config utilities
+    // Burp settings utilities
 
-    // Return the value of a key from the extension's configuration.
+    // Return the value of a key from the extension's settings.
     public static String getKey(String key) {
         return api().persistence().extensionData().getString(key);
     }
 
-    // Set the value of a key in the extension's configuration.
+    // Set the value of a key in the extension's settings.
     public static void setKey(String key, String value) {
         api().persistence().extensionData().setString(key, value);
     }
 
-    // Return the database path from the extension's configuration.
+    // Return the database path from the extension's settings.
     public static String getDBPath() {
         return getKey(Constants.DB_PATH_KEY);
     }
 
-    // Set the database path in the extension's configuration.
+    // Set the database path in the extension's settings.
     public static void setDBPath(String dbPath) {
         setKey(Constants.DB_PATH_KEY, dbPath);
     }
@@ -91,17 +91,17 @@ public class Utils {
         return Constants.CAPTURE_STATUS_ACTIVE.equals(getCaptureStatus());
     }
 
-    // Set the capture status in the extension's configuration to "active."
+    // Set the capture status in the extension's settings to "active."
     public static void setActiveCaptureStatus() {
         setKey(Constants.CAPTURE_STATUS_KEY, Constants.CAPTURE_STATUS_ACTIVE);
     }
 
-    // Set the capture status in the extension's configuration to "inactive."
+    // Set the capture status in the extension's settings to "inactive."
     public static void setInactiveCaptureStatus() {
         setKey(Constants.CAPTURE_STATUS_KEY, Constants.CAPTURE_STATUS_INACTIVE);
     }
 
-    // Get the capture status from the extension's configuration.
+    // Get the capture status from the extension's settings.
     public static String getCaptureStatus() {
         return getKey(Constants.CAPTURE_STATUS_KEY);
     }
