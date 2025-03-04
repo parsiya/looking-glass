@@ -1,5 +1,6 @@
 package looking_glass.common;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.time.Instant;
 import java.util.List;
@@ -8,8 +9,10 @@ import javax.swing.SwingUtilities;
 
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.http.message.HttpHeader;
-
+import burp.api.montoya.ui.Theme;
+import looking_glass.Handler;
 import looking_glass.message.Header;
+import looking_glass.ui.DBModal;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -86,19 +89,26 @@ public class Utils {
         setKey(Constants.DB_PATH_KEY, dbPath);
     }
 
+    // --------------------
+    // Capture utils
+    // --------------------
+
     // Returns true if the capture status is "active."
     public static boolean isCapturing() {
         return Constants.CAPTURE_STATUS_ACTIVE.equals(getCaptureStatus());
     }
 
-    // Set the capture status in the extension's settings to "active."
-    public static void setActiveCaptureStatus() {
-        setKey(Constants.CAPTURE_STATUS_KEY, Constants.CAPTURE_STATUS_ACTIVE);
-    }
-
-    // Set the capture status in the extension's settings to "inactive."
-    public static void setInactiveCaptureStatus() {
-        setKey(Constants.CAPTURE_STATUS_KEY, Constants.CAPTURE_STATUS_INACTIVE);
+    // Sets the capture status in extension settings.
+    // True: "active".
+    // False: "inactive".
+    // Note: This doesn't pause capture on the fly. But when the extension wants to
+    // register a handler on startup, it will check this and act accordingly.
+    public static void setCaptureStatus(boolean status) {
+        if (status) {
+            setKey(Constants.CAPTURE_STATUS_KEY, Constants.CAPTURE_STATUS_ACTIVE);
+        } else {
+            setKey(Constants.CAPTURE_STATUS_KEY, Constants.CAPTURE_STATUS_INACTIVE);
+        }
     }
 
     // Get the capture status from the extension's settings.
@@ -106,20 +116,67 @@ public class Utils {
         return getKey(Constants.CAPTURE_STATUS_KEY);
     }
 
-    // -----------
+    // Register the HTTPHandler and start capturing.
+    public static void startCapture() {
+        // Enable the HttpHandler.
+        try {
+            // Get the handler.
+            Handler httpHandler = Handler.getInstance();
+            // If the database connection is not established, show the DB modal.
+            if (httpHandler.getConnection() == null) {
+                DBModal.show();
+            }
+            httpHandler.register(api().http().registerHttpHandler(httpHandler));
+            Log.toOutput("Registered the handler.");
+            setCaptureStatus(true);
+        } catch (Exception e) {
+            msgBox("Error", "Error registering handler: " + e.getMessage());
+            Log.toError("Error registering handler: " + e.getMessage());
+        }
+    }
+
+    // Deregister the HTTPHandler and stop capturing.
+    public static void stopCapture() {
+        try {
+            Handler httpHandler = Handler.getInstance();
+            httpHandler.deregister();
+            setCaptureStatus(false);
+            // Close the DB connection in case we want to use the DB while the extension is loaded.
+            httpHandler.closeDBConnection();
+        } catch (Exception e) {
+            msgBox("Error", "Error deregistering handler: " + e.getMessage());
+            Log.toError("Error deregistering handler: " + e.getMessage());
+        }
+    }
+
+    // --------------------
     // Java Swing utilities
+    // --------------------
 
     // Return the Burp frame to use in Swing.
     public static Component burpFrame() {
         return api().userInterface().swingUtils().suiteFrame();
     }
 
-    public static void msgBox(final Component parent, final String message, final String title) {
-        JOptionPane.showMessageDialog(parent, message, title, JOptionPane.INFORMATION_MESSAGE);
+    // Display a message box.
+    public static void msgBox(String title, String message) {
+        JOptionPane.showMessageDialog(burpFrame(), message, title, JOptionPane.INFORMATION_MESSAGE);
     }
 
-    // Apply Burp look and feel to a component.
+    // Apply Burp look and feel to a component. Doesn't look like its working
+    // for buttons. It keeps the background color of the button.
     public static void applyBurpStyle(Component component) {
         api().userInterface().applyThemeToComponent(component);
+    }
+
+    // Set the background color of a Component based on theme.
+    // Dark theme: 76, 80, 82
+    // Light theme: white
+    public static void setBackground(Component component) {
+        if (api().userInterface().currentTheme() == Theme.DARK) {
+            component.setBackground(new Color(76, 80, 82));
+        } else {
+            component.setBackground(Color.white);
+        }
     }
 }

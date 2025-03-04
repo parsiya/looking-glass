@@ -1,90 +1,71 @@
 package looking_glass.ui;
 
-import java.awt.Component;
 import java.io.File;
 import java.sql.Connection;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import looking_glass.Handler;
-import looking_glass.common.Constants;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
 import looking_glass.db.DB;
 
 public class DBModal {
 
-    // Show the modal with two options.
-    // "Choose a new one" and "Pause capture".
-    private static void twoOptions(String message) {
-        // Take the last two button names.
-        String[] options = new String[] { Constants.DB_MODAL_OPTIONS[1], Constants.DB_MODAL_OPTIONS[2] };
-
-        // Get burp frame, we will set it as a the parent of the modal.
-        Component burpFrame = Utils.burpFrame();
-
+    // Let users choose a new DB.
+    // "Choose DB": JFileChooser to choose a new DB.
+    // "Cancel" or closing the dialog: Pause capture.
+    private static void newDBDialog(String message) {
         // Show the modal.
         int ret = JOptionPane.showOptionDialog(
-                burpFrame, // Parent component
+                Utils.burpFrame(), // Parent component
                 message, // Message
-                "Choose a new DB", // Title
+                "Choose DB", // Title
                 JOptionPane.YES_NO_OPTION, // Option type
                 JOptionPane.PLAIN_MESSAGE, // Message type
                 null, // Icon
-                options, // Options
-                JOptionPane.NO_OPTION // Initial value is "pause logging"
+                new String[] { "Choose a New DB", "Cancel & Pause Capture" }, // Options
+                JOptionPane.NO_OPTION // Initial value is "cancel"
         );
-
         // Process the options.
         switch (ret) {
-            // "Choose a new file"
+            // "Choose a new DB"
             case JOptionPane.YES_OPTION:
-                chooseNewDB();
+                selectDBFile();
                 break;
-            // "Pause capture"
+            // Do nothing if user clicks cancel or closes the window.
             case JOptionPane.NO_OPTION:
-                // Also pause capture if the user closes the dialog.
             default:
-                pauseCapture();
+                Log.toOutput("User did not choose a new DB. Pausing capture.");
+                Utils.setCaptureStatus(false);
         }
     }
 
-    // Show the modal with three options.
-    // "Use the file", "Choose a new one", and "Pause capture".
-    private static void threeOptions(String message) {
-        // Get burp frame, we will set it as a the parent of the modal.
-        final Component burpFrame = Utils.burpFrame();
-
+    // Let users choose a new DB or keep using the current one.
+    // "Choose a new DB": JFileChooser to choose a new DB.
+    // "Cancel" or closing the dialog: Keep using the current one.
+    private static void chooseDBDialog() {
         // Show the modal.
         int ret = JOptionPane.showOptionDialog(
-                burpFrame, // Parent component
-                message, // Message
-                "DB Options", // Title
-                JOptionPane.YES_NO_CANCEL_OPTION, // Option type
-                JOptionPane.PLAIN_MESSAGE, // Message type
-                null, // Icon
-                Constants.DB_MODAL_OPTIONS, // Options
-                JOptionPane.NO_OPTION // Initial value is "pause logging"
+                Utils.burpFrame(), // Parent component
+                "Current DB: " + Utils.getDBPath(),
+                "Choose DB",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                new String[] { "Choose a New DB", "Keep Current DB" }, // Options
+                JOptionPane.NO_OPTION // Initial value is "cancel"
         );
-
         // Process the options.
         switch (ret) {
-            // "Use the file"
+            // "Choose a new DB"
             case JOptionPane.YES_OPTION:
-                // Do nothing, use the same file.
-                Log.toOutput("Keep using the current DB: " + Utils.getDBPath());
+                selectDBFile();
                 break;
-            // "Choose a new one"
+            // Do nothing if user clicks cancel or closes the window.
             case JOptionPane.NO_OPTION:
-                chooseNewDB();
-                break;
-            // "Pause capture"
-            case JOptionPane.CANCEL_OPTION:
-                // Also pause capture if the user closes the dialog.
             default:
-                pauseCapture();
         }
     }
 
@@ -94,17 +75,21 @@ public class DBModal {
 
         // If dbPath is null, show a message to choose a new DB.
         if (dbPath == null) {
-            twoOptions("No DB selected.\nChoose a new one:");
+            Log.toOutput("DB path in extension settings is empty, asking user to choose a new one.");
+            newDBDialog("No DB selected.");
+            // It's OK if users do not choose a DB here, we will check when we they enable
+            // capture.
         } else {
             // Try to connect to the DB.
             Log.toOutput("Checking the DB connection to: " + dbPath);
             try {
                 Connection conn = DB.connect(dbPath);
                 conn.close(); // Close the connection, we will make it again later.
-                threeOptions("Current DB: " + dbPath);
+                chooseDBDialog(); // Allow the user to choose a new one if wanted.
             } catch (Exception e) {
-                Log.toError(e.getMessage());
-                twoOptions("The DB connection to: " + dbPath + " failed.\nChoose a new one:");
+                // If the current connection doesn't exist.
+                Utils.msgBox("Error", "DB Connection failed, choose a new one\n" + e.getMessage());
+                newDBDialog("DB Connection failed, choose a new one.\n" + e.getMessage());
             }
         }
 
@@ -124,41 +109,17 @@ public class DBModal {
         }
     }
 
-    // Use a new DB file.
-    private static void chooseNewDB() {
-
-        String newDB = selectDBFile();
-        // Keep showing the file chooser dialog until a valid file is selected or the
-        // dialog is canceled.
-        while (newDB == null) {
-            newDB = selectDBFile();
-        }
-
-        // ZZZ what happens here if we cancel the dialog. Will the result be empty?
-        Log.toOutput("Using new DB: " + newDB + ".");
-        // Store the new DB path in the extension's settings.
-        Utils.setDBPath(newDB);
-        // Enable capture.
-        Utils.setActiveCaptureStatus();
-    }
-
-    private static void pauseCapture() {
-        // Store the capture status in the extension's settings.
-        Utils.setInactiveCaptureStatus();
-        Log.toOutput("Capture paused.");
-    }
-
     // Opens a file chooser dialog to select a file.
-    private static String selectDBFile() {
+    private static void selectDBFile() {
         // Create a file chooser and set the file extension filter.
         DBFileChooser fileChooser = new DBFileChooser();
 
-        // Show the file chooser dialog
-        int returnVal = fileChooser.show(null);
+        // Show the file chooser dialog.
+        int returnVal = fileChooser.show(Utils.burpFrame());
 
-        // Check if a file was selected
+        // Check if a file was selected.
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            // Get the selected file
+            // Get the selected file.
             File file = fileChooser.getSelectedFile();
 
             // If the file doesn't exist, get the path.
@@ -168,13 +129,15 @@ public class DBModal {
             try {
                 // Store the file path in the extension's settings.
                 Utils.setDBPath(file.getAbsolutePath());
-                return file.getAbsolutePath();
-
+                final String NEW_DB_CREATED_MSG = "Using the DB at: ";
+                Utils.msgBox("", NEW_DB_CREATED_MSG + file.getAbsolutePath());
+                Log.toOutput(NEW_DB_CREATED_MSG + file.getAbsolutePath());
+                // Set capture status to active.
+                Utils.setCaptureStatus(true);
             } catch (Exception e) {
+                Utils.msgBox("Error", "Error creating DB.\n" + e.getMessage());
                 Log.toError("Error creating DB: " + e.getMessage());
-                return null;
             }
         }
-        return null;
     }
 }

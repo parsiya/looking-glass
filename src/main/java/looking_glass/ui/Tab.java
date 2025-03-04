@@ -1,10 +1,9 @@
 package looking_glass.ui;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.io.File;
+
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -31,6 +30,8 @@ public class Tab extends JSplitPane {
     private static final String PROXY_BUTTON_TOOLTIP = "Import the proxy history into the database";
     private static final String SETTINGS_BUTTON = "Extension Settings";
     private static final String SETTINGS_BUTTON_TOOLTIP = "Looking Glass settings";
+    private static final String CAPTURE_BUTTON_ON = "Capture On";
+    private static final String CAPTURE_BUTTON_OFF = "Capture Off";
 
     private JList<String> queryList;
     private JScrollPane queryListScrollPane;
@@ -64,14 +65,23 @@ public class Tab extends JSplitPane {
         JButton clearBtn = new JButton(CLEAR_BUTTON);
         clearBtn.addActionListener(e -> clearBtnAction());
 
-        JButton dbBtn = new JButton(DB_BUTTON);
-        dbBtn.setToolTipText(DB_BUTTON_TOOLTIP);
-        dbBtn.setFont(dbBtn.getFont().deriveFont(Font.BOLD));
-        dbBtn.addActionListener(e -> DBModal.show());
-
         JButton importProxyBtn = new JButton(PROXY_BUTTON_TEXT);
         importProxyBtn.setToolTipText(PROXY_BUTTON_TOOLTIP);
         importProxyBtn.addActionListener(e -> importProxyHistory());
+
+        JButton captureBtn = new JButton(CAPTURE_BUTTON_OFF);
+        captureBtn.setFont(captureBtn.getFont().deriveFont(Font.BOLD));
+        // Draw the button based on the capture status at startup.
+        paintCaptureBtn(captureBtn); 
+        captureBtn.addActionListener(e -> {
+            // Toggle the capture status after button click.
+            if (Utils.isCapturing()) {
+                Utils.stopCapture();
+            } else {
+                Utils.startCapture();
+            }
+            paintCaptureBtn(captureBtn);
+        });
 
         JButton settingsBtn = new JButton(SETTINGS_BUTTON);
         settingsBtn.setToolTipText(SETTINGS_BUTTON_TOOLTIP);
@@ -81,6 +91,11 @@ public class Tab extends JSplitPane {
             myFrame.display();
         });
 
+        JButton dbBtn = new JButton(DB_BUTTON);
+        dbBtn.setToolTipText(DB_BUTTON_TOOLTIP);
+        dbBtn.setFont(dbBtn.getFont().deriveFont(Font.BOLD));
+        dbBtn.addActionListener(e -> DBModal.show());
+
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
         buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
@@ -89,9 +104,11 @@ public class Tab extends JSplitPane {
         buttonPanel.add(saveBtn);
         buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         buttonPanel.add(clearBtn);
-        buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
-        buttonPanel.add(importProxyBtn);
         buttonPanel.add(Box.createHorizontalGlue());
+        buttonPanel.add(importProxyBtn);
+        buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
+        buttonPanel.add(captureBtn);
+        buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         buttonPanel.add(settingsBtn);
         buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         buttonPanel.add(dbBtn);
@@ -128,7 +145,7 @@ public class Tab extends JSplitPane {
         Utils.applyBurpStyle(this);
     }
 
-    public static void importProxyHistory() {
+    private static void importProxyHistory() {
         // Get the proxy history.
         Proxy proxy = Utils.api().proxy();
         List<ProxyHttpRequestResponse> history = proxy.history();
@@ -136,7 +153,7 @@ public class Tab extends JSplitPane {
         // Return if history is empty.
         if (history.isEmpty()) {
             // Show a message box.
-            Utils.msgBox(Utils.burpFrame(), "Proxy history is empty.", "Error");
+            Utils.msgBox("Error", "Proxy history is empty.");
             Log.toOutput("Proxy history is empty.");
             return;
         }
@@ -164,16 +181,30 @@ public class Tab extends JSplitPane {
                 int reqId = DB.insertRequest(req, handler.getConnection());
                 DB.insertResponse(res, handler.getConnection(), reqId);
             } catch (Exception e) {
-                String errorResult = String.format("Stored %d pairs in the DB before the error. Check the error log.", i);
-                Utils.msgBox(Utils.burpFrame(), errorResult, "Error");
-                Log.toError(String.format("Stored %d pairs in the DB before the following error.", i));
-                Log.toError(e.getMessage());
+                String errorResult = String.format("Stored %d pairs in the DB before an error.\n" + e.getMessage(), i);
+                Utils.msgBox("Error", errorResult);
+                Log.toError(errorResult);
                 return;
             }
         });
-        String importResult = String.format("Proxy History successfully imported. Stored %d pairs in the DB.", history.size());
-        Utils.msgBox(Utils.burpFrame(), importResult, "Success");
+        String importResult = String.format("Proxy History successfully imported. Stored %d pairs in the DB.",
+                history.size());
+        Utils.msgBox("Success", importResult);
         Log.toOutput(importResult);
+    }
+
+
+    private static void paintCaptureBtn(JButton btn) {
+        if (Utils.isCapturing()) {
+            btn.setText(CAPTURE_BUTTON_ON);
+            btn.setToolTipText("Click to stop capture");
+            btn.setBackground(new Color(38, 100, 157));
+        } else {
+            btn.setText(CAPTURE_BUTTON_OFF);
+            btn.setToolTipText("Click to start capture");
+            // Utils.applyBurpStyle(btn); // This doesn't work for to change the background.
+            Utils.setBackground(btn);
+        }
     }
 
     public static void clearBtnAction() {

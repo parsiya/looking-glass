@@ -13,10 +13,10 @@ class DBFileChooser {
     // Creates the file chooser for DB files.
     public DBFileChooser() {
         fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Select the database");
+        fileChooser.setDialogTitle("Select the database file");
         fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("DB files", "db");
-        fileChooser.setFileFilter(filter);
+        // FileNameExtensionFilter filter = new FileNameExtensionFilter("DB files", "db");
+        // fileChooser.setFileFilter(filter);
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
