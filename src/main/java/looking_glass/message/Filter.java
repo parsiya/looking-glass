@@ -32,12 +32,12 @@ public class Filter {
     // 4. If both lists are empty, return true.
     public boolean hostMatches(Request req) {
 
-        // 1. Check if the include list is empty
-        if (settings.includeTableData != null) {
+        // 1. Check if the include list is empty.
+        if (settings.includeTableData != null || settings.includeTableData.size() > 0) {
             // 2. If not, check if the host is in the include list.
             for (Vector<String> row : settings.includeTableData) {
-                if (req.host.contains(row.get(0))) {
-                    // 2.1 If the host is in the include list, return true.
+                // This checks for subdomains.
+                if (req.host.endsWith(row.get(0))) {
                     return true;
                 }
             }
@@ -47,9 +47,9 @@ public class Filter {
         }
 
         // 3. If the include list is not empty, check the exclude list.
-        if (settings.excludeTableData != null) {
+        if (settings.excludeTableData != null || settings.excludeTableData.size() > 0) {
             for (Vector<String> row : settings.excludeTableData) {
-                if (req.host.contains(row.get(0))) {
+                if (req.host.endsWith(row.get(0))) {
                     // 3.1 If the host is in the exclude list, return false.
                     return false;
                 }

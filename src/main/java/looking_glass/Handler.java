@@ -40,8 +40,8 @@ public class Handler implements HttpHandler {
             handler.filter = new Filter(handler.settings);
         } catch (Exception e) {
             Log.toError("Error reading settings: " + e.getMessage());
-            // Use default settings.
-            handler.settings = ExtensionSettings.getDefault();
+            // Use default settings and store them.
+            handler.setSettings(ExtensionSettings.getDefault());
             handler.filter = new Filter(handler.settings);
             Log.toError("Using default settings.");
         }
