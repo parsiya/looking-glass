@@ -126,6 +126,15 @@ public class Utils {
             if (httpHandler.getConnection() == null) {
                 DBModal.show();
             }
+
+            // Check if the handler has a connection. If not, it means the user
+            // did not choose a DB in the DBModal.
+            if (httpHandler.getConnection() == null) {
+                msgBox("Error", "Please choose a DB to start capturing.");
+                Log.toError("User did not choose a DB, capture did not start.");
+                setCaptureStatus(false);
+                return;
+            }
             httpHandler.register(api().http().registerHttpHandler(httpHandler));
             Log.toOutput("Registered the handler.");
             setCaptureStatus(true);
@@ -147,6 +156,11 @@ public class Utils {
             msgBox("Error", "Error deregistering handler: " + e.getMessage());
             Log.toError("Error deregistering handler: " + e.getMessage());
         }
+    }
+
+    // Return the settings string from the extension settings.
+    public static String getSettings() {
+        return getKey(Constants.SETTINGS_KEY);
     }
 
     // --------------------

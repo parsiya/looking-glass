@@ -154,7 +154,7 @@ public class DB {
             insertRes.setInt(3, res.statusCode);
             insertRes.setString(4, res.reasonPhrase);
             insertRes.setString(5, res.contentType);
-            insertRes.setString(6, res.inferredContentType);
+            insertRes.setString(6, res.burpMimeType.toString()); // ZZZ change if we change the mimetype.
             insertRes.setInt(7, res.contentLength);
             insertRes.setDate(8, new java.sql.Date(res.date.toEpochMilli()));
             insertRes.setString(9, res.cookieNames);

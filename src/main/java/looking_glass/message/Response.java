@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.time.Instant;
 
+import com.google.gson.annotations.Expose;
+
 import burp.api.montoya.core.ToolType;
+import burp.api.montoya.http.message.MimeType;
 import burp.api.montoya.http.message.responses.HttpResponse;
 
 import looking_glass.common.Utils;
@@ -19,8 +22,9 @@ public class Response {
     // Burp's response.MimeType returns an enum with only the Burp's recognized
     // types (see below). I want something freeform here.
     public String contentType;
-    // response.inferredMimeType is also stored in case I need it.
-    public String inferredContentType;
+    // MimeType recognized by Burp. Note, this is limited.
+    // @Expose(serialize = false) // Do not serialize this to JSON.
+    public MimeType burpMimeType;
 
     public int contentLength;
 
@@ -47,6 +51,9 @@ public class Response {
     // Constructor to populate the fields from a HttpResponse object.
     public Response(HttpResponse response, ToolType toolSource) {
 
+        response.mimeType();
+        response.statedMimeType();
+        response.inferredMimeType();
         // Go through the headers and store them in a list of Header objects.
         List<Header> parsedHeaders = response.headers().stream()
                 .map(header -> new Header(header.name(), header.value()))
@@ -61,7 +68,7 @@ public class Response {
         this.body = response.bodyToString();
 
         this.contentType = this.getHeader("Content-Type");
-        this.inferredContentType = response.inferredMimeType().toString();
+        this.burpMimeType = response.mimeType();
 
         // Only parse if the `Date` header exists, otherwise set it to null.
         String dateHeader = this.getHeader("Date");

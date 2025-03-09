@@ -72,7 +72,7 @@ public class Tab extends JSplitPane {
         JButton captureBtn = new JButton(CAPTURE_BUTTON_OFF);
         captureBtn.setFont(captureBtn.getFont().deriveFont(Font.BOLD));
         // Draw the button based on the capture status at startup.
-        paintCaptureBtn(captureBtn); 
+        paintCaptureBtn(captureBtn);
         captureBtn.addActionListener(e -> {
             // Toggle the capture status after button click.
             if (Utils.isCapturing()) {
@@ -87,8 +87,12 @@ public class Tab extends JSplitPane {
         settingsBtn.setToolTipText(SETTINGS_BUTTON_TOOLTIP);
         settingsBtn.setFont(settingsBtn.getFont().deriveFont(Font.BOLD));
         settingsBtn.addActionListener(e -> {
-            SettingsDialog myFrame = new SettingsDialog();
-            myFrame.display();
+            try {
+                SettingsDialog myFrame = new SettingsDialog();
+                myFrame.display();
+            } catch (Exception exception) {
+               Utils.msgBox("error", exception.getMessage());
+            }
         });
 
         JButton dbBtn = new JButton(DB_BUTTON);
@@ -162,22 +166,22 @@ public class Tab extends JSplitPane {
 
         // Go through the proxy history.
         IntStream.range(0, history.size()).forEach(i -> {
-            ProxyHttpRequestResponse item = history.get(i);
-            Request req = new Request(item.finalRequest(), item.annotations(), ToolType.PROXY);
-            Response res = new Response(item.originalResponse(), ToolType.PROXY);
-
-            // Store the request and responses in the DB.
-
-            // Get an instance of Handler, which has the DB connection.
-            Handler handler = Handler.getInstance();
-            // Now the connection might not be established. If so, we show the
-            // DB modal so the user can choose a DB and make a connection.
-            while (handler.getConnection() == null) {
-                DBModal.show();
-            }
-            // Hopefully, the user has finally chosen a DB and the connection is
-            // populated.
             try {
+                ProxyHttpRequestResponse item = history.get(i);
+                Request req = new Request(item.finalRequest(), item.annotations(), ToolType.PROXY);
+                Response res = new Response(item.originalResponse(), ToolType.PROXY);
+
+                // Store the request and responses in the DB.
+
+                // Get an instance of Handler, which has the DB connection.
+                Handler handler = Handler.getInstance();
+                // Now the connection might not be established. If so, we show the
+                // DB modal so the user can choose a DB and make a connection.
+                while (handler.getConnection() == null) {
+                    DBModal.show();
+                }
+                // Hopefully, the user has finally chosen a DB and the connection is
+                // populated.
                 int reqId = DB.insertRequest(req, handler.getConnection());
                 DB.insertResponse(res, handler.getConnection(), reqId);
             } catch (Exception e) {
@@ -192,7 +196,6 @@ public class Tab extends JSplitPane {
         Utils.msgBox("Success", importResult);
         Log.toOutput(importResult);
     }
-
 
     private static void paintCaptureBtn(JButton btn) {
         if (Utils.isCapturing()) {

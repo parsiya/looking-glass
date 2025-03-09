@@ -1,100 +1,59 @@
 package looking_glass;
 
+import java.util.Arrays;
 import java.util.Vector;
-
-import javax.swing.table.DefaultTableModel;
 
 import looking_glass.common.Utils;
 
 public class ExtensionSettings {
 
-    private boolean sizeStatus;
-    private boolean showStatus;
-    private boolean hideStatus;
-    private String sizeValue;
-    private String showValue;
-    private String hideValue;
-    private boolean[] mimeTypes;
-    private Vector<Vector> includeTableData;
-    private Vector<Vector> excludeTableData;
-
-    public boolean isSizeStatus() {
-        return sizeStatus;
-    }
-
-    public void setSizeStatus(boolean sizeStatus) {
-        this.sizeStatus = sizeStatus;
-    }
-
-    public boolean isShowStatus() {
-        return showStatus;
-    }
-
-    public void setShowStatus(boolean showStatus) {
-        this.showStatus = showStatus;
-    }
-
-    public boolean isHideStatus() {
-        return hideStatus;
-    }
-
-    public void setHideStatus(boolean hideStatus) {
-        this.hideStatus = hideStatus;
-    }
-
-    public String getSizeValue() {
-        return sizeValue;
-    }
-
-    public void setSizeValue(String sizeValue) {
-        this.sizeValue = sizeValue;
-    }
-
-    public String getShowValue() {
-        return showValue;
-    }
-
-    public void setShowValue(String showValue) {
-        this.showValue = showValue;
-    }
-
-    public String getHideValue() {
-        return hideValue;
-    }
-
-    public void setHideValue(String hideValue) {
-        this.hideValue = hideValue;
-    }
-
-    public boolean[] getMimeTypes() {
-        return mimeTypes;
-    }
-
-    public void setMimeTypes(boolean[] mimeTypes) {
-        this.mimeTypes = mimeTypes;
-    }
-
-    public Vector<Vector> getIncludeTableData() {
-        return includeTableData;
-    }
-
-    public void setIncludeTableData(Vector<Vector> includeTableData) {
-        this.includeTableData = includeTableData;
-    }
-
-    public Vector<Vector> getExcludeTableData() {
-        return excludeTableData;
-    }
-
-    public void setExcludeTableData(Vector<Vector> excludeTableData) {
-        this.excludeTableData = excludeTableData;
-    }
+    public boolean bodySizeStatus;
+    public boolean storeFileExtensionStatus;
+    public boolean skipFileExtensionStatus;
+    public int bodySizeValue;
+    public String storeFileExtensions;
+    public String hideFileExtensions;
+    public boolean[] mimeTypes;
+    public Vector<Vector> includeTableData;
+    public Vector<Vector> excludeTableData;
 
     public String toJson() throws Exception {
         return Utils.toJson(this);
     }
 
-    public static ExtensionSettings fromJson(String json) throws Exception {
-        return Utils.fromJson(json, ExtensionSettings.class);
+    public ExtensionSettings(String json) throws Exception {
+        ExtensionSettings settings = Utils.fromJson(json, ExtensionSettings.class);
+        this.bodySizeStatus = settings.bodySizeStatus;
+        this.storeFileExtensionStatus = settings.storeFileExtensionStatus;
+        this.skipFileExtensionStatus = settings.skipFileExtensionStatus;
+        this.bodySizeValue = settings.bodySizeValue;
+        this.storeFileExtensions = settings.storeFileExtensions;
+        this.hideFileExtensions = settings.hideFileExtensions;
+        this.mimeTypes = settings.mimeTypes;
+        this.includeTableData = settings.includeTableData;
+        this.excludeTableData = settings.excludeTableData;
+    }
+
+    public ExtensionSettings() {
+    }
+
+    // Returns a default settings object.
+    public static ExtensionSettings getDefault() {
+        ExtensionSettings settings = new ExtensionSettings();
+        settings.bodySizeStatus = false;
+        settings.bodySizeValue = 5;
+
+        settings.storeFileExtensionStatus = false;
+        settings.storeFileExtensions = "";
+
+        settings.skipFileExtensionStatus = true;
+        settings.hideFileExtensions = "js,gif,jpg,png,css,woff,woff2,mp3,wav,ogg,aac,flac,mp4,avi,mov,wmv,mkv,bmp,tiff,svg,ico,ttf,otf,eot,zip,rar,7z,gz,bz2,exe,dll,msi";;
+
+        settings.mimeTypes = new boolean[8];
+        Arrays.fill(settings.mimeTypes, true); // Set everything to true.
+
+        settings.includeTableData = new Vector<>();
+        settings.excludeTableData = new Vector<>();
+        return settings;
     }
 }

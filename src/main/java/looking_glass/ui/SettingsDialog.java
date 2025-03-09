@@ -9,17 +9,21 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.text.NumberFormat;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.text.NumberFormatter;
 
 import looking_glass.ExtensionSettings;
+import looking_glass.Handler;
 import looking_glass.common.Constants;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
@@ -53,17 +57,18 @@ public class SettingsDialog extends JDialog {
     // File extension filter panel name
     private static final String FILE_EXTENSION_FILTER_PANEL = "File extension";
     // Store only and skip labels
-    private static final String SHOW_ONLY_LABEL = "Store:";
-    private static final String HIDE_LABEL = "Skip:";
+    private static final String STORE_LABEL = "Store:";
+    private static final String SKIP_LABEL = "Skip:";
 
     // Buttons
     private static final String CANCEL_BUTTON = "Cancel";
     private static final String SAVE_BUTTON = "Apply & Close";
 
     private TableEditor include, exclude;
-    private JTextField showTextField, hideTextField, sizeTextField;
-    private LabeledCheckBox sizeCheckBox, showCheckBox, hideCheckBox;
+    private JTextField storeTextField, skipTextField;
+    private LabeledCheckBox sizeCheckBox, storeCheckBox, skipCheckBox;
     private LabeledCheckBox[] mimeTypeCheckBoxes;
+    private JFormattedTextField sizeTextField;
 
     // Issue: I used a singleton instance for the settings dialog, but it is not
     // working because it kept the changes even after closing the frame so I am
@@ -142,8 +147,15 @@ public class SettingsDialog extends JDialog {
                 sizeFilterPanel.getBorder(),
                 BorderFactory.createEmptyBorder(5, 0, 5, 5)));
         this.sizeCheckBox = new LabeledCheckBox(SIZE_LABEL);
-        sizeTextField = new JTextField();
         sizeFilterPanel.add(sizeCheckBox);
+        // Set up the size text field to only accept numbers.
+        NumberFormat format = NumberFormat.getInstance();
+        NumberFormatter formatter = new NumberFormatter(format);
+        formatter.setValueClass(Integer.class);
+        formatter.setAllowsInvalid(false);
+        sizeTextField = new JFormattedTextField(formatter);
+        sizeTextField.setColumns(10);
+        sizeTextField.setToolTipText("Enter the size in MB");
         sizeFilterPanel.add(sizeTextField);
 
         // File extensions.
@@ -160,67 +172,67 @@ public class SettingsDialog extends JDialog {
         extensionFilterPanel.setLayout(new GridLayout(2, 2, 0, 10));
 
         // Show only file extensions.
-        this.showCheckBox = new LabeledCheckBox(SHOW_ONLY_LABEL);
-        this.showTextField = new JTextField();
+        this.storeCheckBox = new LabeledCheckBox(STORE_LABEL);
+        this.storeTextField = new JTextField();
 
         // Hide file extensions.
-        this.hideCheckBox = new LabeledCheckBox(HIDE_LABEL);
-        this.hideTextField = new JTextField();
+        this.skipCheckBox = new LabeledCheckBox(SKIP_LABEL);
+        this.skipTextField = new JTextField();
 
         // Like the proxy filter, if one checkbox is selected, the other is disabled.
-        showCheckBox.getCheckBox().addActionListener(e -> {
-            if (showCheckBox.isSelected()) {
-                hideCheckBox.setSelected(false);
-                hideCheckBox.setEnabled(false);
-                hideTextField.setEnabled(false);
+        storeCheckBox.getCheckBox().addActionListener(e -> {
+            if (storeCheckBox.isSelected()) {
+                skipCheckBox.setSelected(false);
+                skipCheckBox.setEnabled(false);
+                skipTextField.setEnabled(false);
             } else {
-                hideCheckBox.setEnabled(true);
-                hideTextField.setEnabled(true);
+                skipCheckBox.setEnabled(true);
+                skipTextField.setEnabled(true);
             }
         });
         // This is to make clicking the label do the same as above.
-        showCheckBox.getLabel().addMouseListener(new java.awt.event.MouseAdapter() {
+        storeCheckBox.getLabel().addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (showCheckBox.isSelected()) {
-                    hideCheckBox.setSelected(false);
-                    hideCheckBox.setEnabled(false);
-                    hideTextField.setEnabled(false);
+                if (storeCheckBox.isSelected()) {
+                    skipCheckBox.setSelected(false);
+                    skipCheckBox.setEnabled(false);
+                    skipTextField.setEnabled(false);
                 } else {
-                    hideCheckBox.setEnabled(true);
-                    hideTextField.setEnabled(true);
+                    skipCheckBox.setEnabled(true);
+                    skipTextField.setEnabled(true);
                 }
             }
         });
 
-        hideCheckBox.getCheckBox().addActionListener(e -> {
-            if (hideCheckBox.isSelected()) {
-                showCheckBox.setSelected(false);
-                showCheckBox.setEnabled(false);
-                showTextField.setEnabled(false);
+        skipCheckBox.getCheckBox().addActionListener(e -> {
+            if (skipCheckBox.isSelected()) {
+                storeCheckBox.setSelected(false);
+                storeCheckBox.setEnabled(false);
+                storeTextField.setEnabled(false);
             } else {
-                showCheckBox.setEnabled(true);
-                showTextField.setEnabled(true);
+                storeCheckBox.setEnabled(true);
+                storeTextField.setEnabled(true);
             }
         });
 
-        hideCheckBox.getLabel().addMouseListener(new java.awt.event.MouseAdapter() {
+        skipCheckBox.getLabel().addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (hideCheckBox.isSelected()) {
-                    showCheckBox.setSelected(false);
-                    showCheckBox.setEnabled(false);
-                    showTextField.setEnabled(false);
+                if (skipCheckBox.isSelected()) {
+                    storeCheckBox.setSelected(false);
+                    storeCheckBox.setEnabled(false);
+                    storeTextField.setEnabled(false);
                 } else {
-                    showCheckBox.setEnabled(true);
-                    showTextField.setEnabled(true);
+                    storeCheckBox.setEnabled(true);
+                    storeTextField.setEnabled(true);
                 }
             }
         });
 
         // Add the two checkboxes to the panel.
-        extensionFilterPanel.add(showCheckBox);
-        extensionFilterPanel.add(showTextField);
-        extensionFilterPanel.add(hideCheckBox);
-        extensionFilterPanel.add(hideTextField);
+        extensionFilterPanel.add(storeCheckBox);
+        extensionFilterPanel.add(storeTextField);
+        extensionFilterPanel.add(skipCheckBox);
+        extensionFilterPanel.add(skipTextField);
 
         // `Save panel` section.
         JPanel savePanel = new JPanel();
@@ -265,22 +277,8 @@ public class SettingsDialog extends JDialog {
 
         this.setPreferredSize(new Dimension(900, 450));
 
-        // Read the value of SETTINGS_KEY and load any data (if exists).
-        String json = Utils.getKey(Constants.SETTINGS_KEY);
-        if (json != null) {
-            try {
-                ExtensionSettings extensionSettings = ExtensionSettings.fromJson(json);
-                if (extensionSettings != null) {
-                    this.loadSettings(extensionSettings);
-                }
-            } catch (Exception e) {
-                Log.toError("Extension settings was corrupted: " + e.getMessage());
-                // ZZZ: Load the default setting.
-            }
-        } else {
-            // ZZZ: Add default settings like Burp.
-            Log.toOutput("No extension settings found. Using default values.");
-        }
+        // Read the settings from the handler.
+        this.loadSettings(Handler.getInstance().getSettings());
 
         // Pack it all up.
         this.pack();
@@ -291,31 +289,37 @@ public class SettingsDialog extends JDialog {
     }
 
     public void display() {
-        this.setLocationRelativeTo(Utils.burpFrame());
-        this.setVisible(true);
+        try {
+            this.setLocationRelativeTo(Utils.burpFrame());
+            this.setVisible(true);
+        } catch (Exception e) {
+            Log.toError("Error displaying settings dialog: " + e.getMessage());
+        }
     }
 
     public void save() {
         ExtensionSettings settings = new ExtensionSettings();
 
         // Store include and exclude table data.
-        settings.setIncludeTableData(this.include.getData());
-        settings.setExcludeTableData(this.exclude.getData());
+        settings.includeTableData = this.include.getData();
+        settings.excludeTableData = this.exclude.getData();
 
         // Store MIME type filter states.
         boolean[] mimeTypeStates = new boolean[MIME_LABELS.length];
         for (int i = 0; i < MIME_LABELS.length; i++) {
             mimeTypeStates[i] = this.mimeTypeCheckBoxes[i].isSelected();
         }
-        settings.setMimeTypes(mimeTypeStates);
+        settings.mimeTypes = mimeTypeStates;
 
         // Store filters size, show/hide file extensions.
-        settings.setSizeStatus(this.sizeCheckBox.isSelected());
-        settings.setSizeValue(this.sizeTextField.getText());
-        settings.setShowStatus(this.showCheckBox.isSelected());
-        settings.setShowValue(this.showTextField.getText());
-        settings.setHideStatus(this.hideCheckBox.isSelected());
-        settings.setHideValue(this.hideTextField.getText());
+        settings.storeFileExtensionStatus = this.storeCheckBox.isSelected();
+        settings.storeFileExtensions = this.storeTextField.getText();
+        settings.skipFileExtensionStatus = this.skipCheckBox.isSelected();
+        settings.hideFileExtensions = this.skipTextField.getText();
+
+        // Try to convert the size value to an integer.
+        settings.bodySizeStatus = this.sizeCheckBox.isSelected();
+        settings.bodySizeValue = (Integer) this.sizeTextField.getValue();
 
         // Convert it to json.
         String json = "";
@@ -327,24 +331,26 @@ public class SettingsDialog extends JDialog {
         }
         // Store it in the settings key.
         Utils.setKey(Constants.SETTINGS_KEY, json);
+        // Store it in the handler. This will also update the filter.
+        Handler.getInstance().setSettings(settings);
     }
 
     // Loads the settings data into the Settings Dialog.
     private void loadSettings(ExtensionSettings settings) {
         // Load the include and exclude table data.
-        this.include.setData(settings.getIncludeTableData());
-        this.exclude.setData(settings.getExcludeTableData());
+        this.include.setData(settings.includeTableData);
+        this.exclude.setData(settings.excludeTableData);
         // Load the MIME type filter states.
-        boolean[] mimeTypeStates = settings.getMimeTypes();
+        boolean[] mimeTypeStates = settings.mimeTypes;
         for (int i = 0; i < MIME_LABELS.length; i++) {
             this.mimeTypeCheckBoxes[i].setSelected(mimeTypeStates[i]);
         }
         // Load the filters size, show/hide file extensions.
-        this.sizeCheckBox.setSelected(settings.isSizeStatus());
-        this.sizeTextField.setText(settings.getSizeValue());
-        this.showCheckBox.setSelected(settings.isShowStatus());
-        this.showTextField.setText(settings.getShowValue());
-        this.hideCheckBox.setSelected(settings.isHideStatus());
-        this.hideTextField.setText(settings.getHideValue());
+        this.sizeCheckBox.setSelected(settings.bodySizeStatus);
+        this.sizeTextField.setValue(settings.bodySizeValue);
+        this.storeCheckBox.setSelected(settings.storeFileExtensionStatus);
+        this.storeTextField.setText(settings.storeFileExtensions);
+        this.skipCheckBox.setSelected(settings.skipFileExtensionStatus);
+        this.skipTextField.setText(settings.hideFileExtensions);
     }
 }
