@@ -27,13 +27,15 @@ replay_pid*
 build/
 bin/
 
-# keep the release directory and the build jar
-# ZZZ remove this for the final version.
-# !/release/*.jar
-
 # do not keep .gradle
 .gradle/
 
 # do not keep Zone.Identifier files
 *Zone.Identifier
 
+# ignore the .github directory
+.github
+
+# keep the release directory and the build jar
+# ZZZ remove this for the final version.
+# !/release/*.jar

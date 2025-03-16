@@ -91,7 +91,7 @@ public class Tab extends JSplitPane {
                 SettingsDialog myFrame = new SettingsDialog();
                 myFrame.display();
             } catch (Exception exception) {
-               Utils.msgBox("error", exception.getMessage());
+                Utils.msgBox("error", exception.getMessage());
             }
         });
 
@@ -162,6 +162,21 @@ public class Tab extends JSplitPane {
             return;
         }
 
+        // Check if a database is selected or not.
+        Handler handler = Handler.getInstance();
+        if (handler.getConnection() == null) {
+            // If connection is empty, ask the user to select a database.
+            DBModal.show();
+        }
+
+        // If the handler's connection is still null, it means the user did not
+        // choose a DB. Show and error and return.
+        if (handler.getConnection() == null) {
+            Utils.msgBox("Error", "Please choose a DB to import the proxy history.");
+            Log.toError("User did not choose a DB, the extension didn't import the proxy history.");
+            return;
+        }
+
         Log.toOutput("Storing the proxy history in the DB.");
 
         // Go through the proxy history.
@@ -172,16 +187,6 @@ public class Tab extends JSplitPane {
                 Response res = new Response(item.originalResponse(), ToolType.PROXY);
 
                 // Store the request and responses in the DB.
-
-                // Get an instance of Handler, which has the DB connection.
-                Handler handler = Handler.getInstance();
-                // Now the connection might not be established. If so, we show the
-                // DB modal so the user can choose a DB and make a connection.
-                while (handler.getConnection() == null) {
-                    DBModal.show();
-                }
-                // Hopefully, the user has finally chosen a DB and the connection is
-                // populated.
                 int reqId = DB.insertRequest(req, handler.getConnection());
                 DB.insertResponse(res, handler.getConnection(), reqId);
             } catch (Exception e) {
