@@ -88,7 +88,7 @@ public class DBModal {
                 chooseDBDialog(); // Allow the user to choose a new one if wanted.
             } catch (Exception e) {
                 // If the current connection doesn't exist.
-                Utils.msgBox("Error", "DB Connection failed, choose a new one\n" + e.getMessage());
+                Log.toError("DB Connection failed, choose a new one\n" + e.getMessage());
                 newDBDialog("DB Connection failed, choose a new one.\n" + e.getMessage());
             }
         }
