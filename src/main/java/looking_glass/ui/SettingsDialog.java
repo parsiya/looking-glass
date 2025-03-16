@@ -251,7 +251,7 @@ public class SettingsDialog extends JDialog {
         applyBtn.setFont(applyBtn.getFont().deriveFont(Font.BOLD));
         applyBtn.addActionListener(e -> {
             // Save the settings and close the form.
-            this.save();
+            this.saveSettings();
             this.dispose();
         });
 
@@ -297,7 +297,7 @@ public class SettingsDialog extends JDialog {
         }
     }
 
-    public void save() {
+    public void saveSettings() {
         ExtensionSettings settings = new ExtensionSettings();
 
         // Store include and exclude table data.
@@ -321,17 +321,8 @@ public class SettingsDialog extends JDialog {
         settings.bodySizeStatus = this.sizeCheckBox.isSelected();
         settings.bodySizeValue = (Integer) this.sizeTextField.getValue();
 
-        // Convert it to json.
-        String json = "";
-        try {
-            json = settings.toJson();
-        } catch (Exception e) {
-            Log.toError("Error converting extension settings to JSON: " + e.getMessage());
-            return;
-        }
-        // Store it in the settings key.
-        Utils.setKey(Constants.SETTINGS_KEY, json);
-        // Store it in the handler. This will also update the filter.
+        // Store it in the handler. This will also update the filter and store
+        // the settings in the extension settings in Burp.
         Handler.getInstance().setSettings(settings);
     }
 

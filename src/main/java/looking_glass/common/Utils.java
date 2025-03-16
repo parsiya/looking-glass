@@ -163,6 +163,11 @@ public class Utils {
         return getKey(Constants.SETTINGS_KEY);
     }
 
+    // Save the settings string to the extension settings.
+    public static void setSettings(String settings) {
+        setKey(Constants.SETTINGS_KEY, settings);
+    }
+
     // --------------------
     // Java Swing utilities
     // --------------------

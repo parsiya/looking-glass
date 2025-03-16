@@ -67,6 +67,7 @@ public class Tab extends JSplitPane {
 
         JButton importProxyBtn = new JButton(PROXY_BUTTON_TEXT);
         importProxyBtn.setToolTipText(PROXY_BUTTON_TOOLTIP);
+        importProxyBtn.setFont(importProxyBtn.getFont().deriveFont(Font.BOLD));
         importProxyBtn.addActionListener(e -> importProxyHistory());
 
         JButton captureBtn = new JButton(CAPTURE_BUTTON_OFF);
@@ -215,8 +216,8 @@ public class Tab extends JSplitPane {
         }
     }
 
-    public static void clearBtnAction() {
-        // ZZZ: TODO
-        // Do nothing for now.
+    private void clearBtnAction() {
+        // Clear queryTextArea.
+        queryTextArea.setText("");
     }
 }

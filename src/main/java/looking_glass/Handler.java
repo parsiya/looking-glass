@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import burp.api.montoya.core.Registration;
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.handler.*;
+import looking_glass.common.Constants;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
 import looking_glass.db.DB;
@@ -34,15 +35,13 @@ public class Handler implements HttpHandler {
         }
 
         try {
-            // Read the filter from the settings.
-            String settingsJson = Utils.getSettings();
-            handler.settings = new ExtensionSettings(settingsJson);
-            handler.filter = new Filter(handler.settings);
+            // Read the settings from the extension config in Burp.This will
+            // also set the filter.
+            handler.setSettings(new ExtensionSettings(Utils.getSettings()));
         } catch (Exception e) {
             Log.toError("Error reading settings: " + e.getMessage());
             // Use default settings and store them.
             handler.setSettings(ExtensionSettings.getDefault());
-            handler.filter = new Filter(handler.settings);
             Log.toError("Using default settings.");
         }
         return handler;
@@ -67,6 +66,19 @@ public class Handler implements HttpHandler {
         this.settings = settings;
         // Update the filter, too.
         this.filter = new Filter(settings);
+        // Store the settings in the config.
+
+        // Convert it to json.
+        String json = "";
+        try {
+            json = settings.toJson();
+        } catch (Exception e) {
+            Log.toError("Error converting extension settings to JSON: " + e.getMessage());
+            Utils.msgBox("Error converting extension settings to JSON:", e.getMessage());
+            return;
+        }
+        // Store it in the settings key.
+        Utils.setSettings(json);
     }
 
     public ExtensionSettings getSettings() {

@@ -102,6 +102,7 @@ public class DBModal {
         }
         // Create a connection to it and store it in the Handler.
         try {
+            Log.toOutput("Connected to the database at: " + dbPath);
             Connection connection = DB.connect(dbPath);
             Handler.getInstance().setConnection(connection);
         } catch (Exception e) {

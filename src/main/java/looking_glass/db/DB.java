@@ -35,7 +35,6 @@ public class DB {
 
         // Is this thing on? Can you see the class, extension?
         Connection connection = DriverManager.getConnection(url);
-        Log.toOutput("Connected to the database at: " + path);
 
         // Add the columns to the create table queries.
         String reqTable = generateCreateTableQuery(Constants.CREATE_REQUEST_TABLE, Constants.REQUEST_FIELDS);
