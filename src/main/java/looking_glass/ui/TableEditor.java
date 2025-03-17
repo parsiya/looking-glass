@@ -3,16 +3,17 @@ package looking_glass.ui;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-import looking_glass.common.Log;
-
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
+
+import looking_glass.common.Log;
 
 public class TableEditor extends JPanel {
     private JTable table;

@@ -3,24 +3,22 @@ package looking_glass.common;
 public class Constants {
     public static final String EXTENSION_NAME = "Looking Glass";
 
-    // --------------------------------------------------
-    // Extension settings strings
-    // --------------------------------------------------
+    // ==================== Extension Settings Strings ====================
 
     // The key for the DB path.
     public static final String DB_PATH_KEY = "db_path";
     // The key for capture status.
     public static final String CAPTURE_STATUS_KEY = "capture";
-    // Value of the capture status key when the extension is capturing.
+    // Capture status key when the extension is capturing.
     public static final String CAPTURE_STATUS_ACTIVE = "active";
-    // Value of the capture status key when the extension is not capturing.
+    // Capture status key when the extension is not capturing.
     public static final String CAPTURE_STATUS_INACTIVE = "inactive";
-    // Value of the settings key.
+    // Settings key.
     public static final String SETTINGS_KEY = "settings";
+    // Queries key.
+    public static final String QUERIES_KEY = "queries";
 
-    // --------------------------------------------------
-    // SQL strings and field definitions
-    // --------------------------------------------------
+    // ==================== SQL strings and field definitions ==============
 
     // Create the request table if it doesn't exist.
     // The format string adds a `,` after `data JSONB`.
@@ -108,10 +106,9 @@ public class Constants {
     // "http_version": How useful?
     // "Access-Control-*" headers.
 
-    // --------------------------------------------------
-    // UI Text
-    // --------------------------------------------------
 
+    // ==================== UI Text ====================
+    
     // The three button labels for the DB modal.
     public static final String[] DB_MODAL_OPTIONS = {
             "Use the file", "Choose a new one", "Pause capture"

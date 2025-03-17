@@ -1,23 +1,23 @@
 package looking_glass.ui;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.*;
+
+import javax.swing.*;
 
 import java.util.List;
 import java.util.stream.IntStream;
 
-import javax.swing.*;
-
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.proxy.Proxy;
 import burp.api.montoya.proxy.ProxyHttpRequestResponse;
+
 import looking_glass.Handler;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
 import looking_glass.db.DB;
 import looking_glass.message.Request;
 import looking_glass.message.Response;
+import looking_glass.query.Query;
 
 public class Tab extends JSplitPane {
 
@@ -33,8 +33,7 @@ public class Tab extends JSplitPane {
     private static final String CAPTURE_BUTTON_ON = "Capture On";
     private static final String CAPTURE_BUTTON_OFF = "Capture Off";
 
-    private JList<String> queryList;
-    private JScrollPane queryListScrollPane;
+    private Sidebar querySidebar;
     private JTextArea queryTextArea;
     private JScrollPane queryTextAreaScrollPane;
     private JTable resultsTable;
@@ -45,25 +44,20 @@ public class Tab extends JSplitPane {
 
         this.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
 
-        // ZZZ: Add some test data to querylist.
-        String[] queries = { "Query 1", "Query 2", "Query 3" };
-        queryList = new JList<String>(queries);
-        queryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // Add it to the scroll pane
-        queryListScrollPane = new JScrollPane(queryList);
-
-        // Create two buttons on top of each other.
+        // Run button
         JButton runBtn = new JButton(RUN_BUTTON);
         // Color of Burp Repeater's "Send" button.
         runBtn.setBackground(new Color(255, 102, 51));
         runBtn.setForeground(Color.WHITE);
         runBtn.setFont(runBtn.getFont().deriveFont(Font.BOLD));
 
+        // Save button.
         JButton saveBtn = new JButton(SAVE_BUTTON);
+        // saveBtn action is added later after the Sidebar is created.
 
+        // Clear button.
         JButton clearBtn = new JButton(CLEAR_BUTTON);
-        clearBtn.addActionListener(e -> clearBtnAction());
+        clearBtn.addActionListener(e -> queryTextArea.setText(""));
 
         JButton importProxyBtn = new JButton(PROXY_BUTTON_TEXT);
         importProxyBtn.setToolTipText(PROXY_BUTTON_TOOLTIP);
@@ -143,13 +137,28 @@ public class Tab extends JSplitPane {
         resultsSplitPane.setBottomComponent(resultsTableScrollPane);
         resultsSplitPane.setDividerLocation(dividerLocation);
 
-        this.setLeftComponent(queryListScrollPane);
+        // ========== Sidebar ==========
+
+        // ZZZ: Read these from the config later.
+        querySidebar = new Sidebar(queryTextArea);
+        // List<Query> queries = Handler.getInstance().getQueries();
+        // if (queries != null) {
+        //     querySidebar.setQueries(queries);
+        // }
+        querySidebar.setPreferredSize(new Dimension(200, 0));
+        // Add the action to the saveBtn because otherwise it will be null.
+        saveBtn.addActionListener(e -> this.querySidebar.saveQueryDetails());
+
+        // Set the sidebar to the left component of the tab.
+        this.setLeftComponent(querySidebar);
+        // Set the resultsSplitPane to the right component of the tab.
         this.setRightComponent(resultsSplitPane);
 
-        // Apply the Burp them to the UI.
+        // Apply the Burp theme to the UI.
         Utils.applyBurpStyle(this);
     }
 
+    // Import proxy history into the DB.
     private static void importProxyHistory() {
         // Get the proxy history.
         Proxy proxy = Utils.api().proxy();
@@ -203,6 +212,7 @@ public class Tab extends JSplitPane {
         Log.toOutput(importResult);
     }
 
+    // Change the color of the capture button based on the capture status.
     private static void paintCaptureBtn(JButton btn) {
         if (Utils.isCapturing()) {
             btn.setText(CAPTURE_BUTTON_ON);
@@ -211,13 +221,7 @@ public class Tab extends JSplitPane {
         } else {
             btn.setText(CAPTURE_BUTTON_OFF);
             btn.setToolTipText("Click to start capture");
-            // Utils.applyBurpStyle(btn); // This doesn't work for to change the background.
             Utils.setBackground(btn);
         }
-    }
-
-    private void clearBtnAction() {
-        // Clear queryTextArea.
-        queryTextArea.setText("");
     }
 }

@@ -4,7 +4,7 @@ import java.awt.Component;
 import java.io.File;
 
 import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
+// import javax.swing.filechooser.FileNameExtensionFilter;
 
 class DBFileChooser {
 

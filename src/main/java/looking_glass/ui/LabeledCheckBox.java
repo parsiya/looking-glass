@@ -1,12 +1,9 @@
 package looking_glass.ui;
 
 import javax.swing.*;
+
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 public class LabeledCheckBox extends JPanel {
     private JCheckBox checkBox;

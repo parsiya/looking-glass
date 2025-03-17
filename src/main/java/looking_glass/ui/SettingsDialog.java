@@ -1,37 +1,20 @@
 package looking_glass.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.text.NumberFormat;
+import java.awt.*;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFormattedTextField;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.NumberFormatter;
+
+import java.text.NumberFormat;
 
 import looking_glass.ExtensionSettings;
 import looking_glass.Handler;
-import looking_glass.common.Constants;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
 
 public class SettingsDialog extends JDialog {
 
-    // Labels
-    // ---------
+    // ==================== UI Text ====================
     // Settings dialog name.
     private static final String SETTINGS_FRAME_NAME = "Looking Glass Settings"; // ZZZ change this.
     // Include and exclude table names.

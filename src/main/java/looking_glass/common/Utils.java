@@ -2,14 +2,17 @@ package looking_glass.common;
 
 import java.awt.Color;
 import java.awt.Component;
+
+import javax.swing.JOptionPane;
+
 import java.time.Instant;
 import java.util.List;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+import java.lang.reflect.Type;
 
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.http.message.HttpHeader;
 import burp.api.montoya.ui.Theme;
+
 import looking_glass.Handler;
 import looking_glass.message.Header;
 import looking_glass.ui.DBModal;
@@ -57,17 +60,15 @@ public class Utils {
         return gson.toJson(obj);
     }
 
-    // Convert a JSON string to a Java object.
-    public static <T> T fromJson(String json, Class<T> classOfT) throws Exception {
+    public static <T> T fromJson(String json, Type typeOfT) throws Exception {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(Instant.class,
                         (JsonSerializer<Instant>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
                 .create();
-        return gson.fromJson(json, classOfT);
+        return gson.fromJson(json, typeOfT);
     }
 
-    // -----------
-    // Burp settings utilities
+    // ==================== Burp Settings Utilities ====================
 
     // Return the value of a key from the extension's settings.
     public static String getKey(String key) {
@@ -89,9 +90,7 @@ public class Utils {
         setKey(Constants.DB_PATH_KEY, dbPath);
     }
 
-    // --------------------
-    // Capture utils
-    // --------------------
+    // ==================== Capture Utilities ====================
 
     // Returns true if the capture status is "active."
     public static boolean isCapturing() {
@@ -150,8 +149,11 @@ public class Utils {
             Handler httpHandler = Handler.getInstance();
             httpHandler.deregister();
             setCaptureStatus(false);
-            // Close the DB connection in case we want to use the DB while the extension is loaded.
+            // Close the DB connection in case we want to use the DB while the extension is
+            // loaded.
             httpHandler.closeDBConnection();
+            // Store the queries in the extension config.
+            Handler.getInstance().saveQueries();
         } catch (Exception e) {
             msgBox("Error", "Error deregistering handler: " + e.getMessage());
             Log.toError("Error deregistering handler: " + e.getMessage());
@@ -168,9 +170,7 @@ public class Utils {
         setKey(Constants.SETTINGS_KEY, settings);
     }
 
-    // --------------------
-    // Java Swing utilities
-    // --------------------
+    // ==================== Java Swing Utilities ====================
 
     // Return the Burp frame to use in Swing.
     public static Component burpFrame() {
