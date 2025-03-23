@@ -66,7 +66,7 @@ public class Sidebar extends JScrollPane {
             this.deleteQuery();
         });
 
-        // ==================== Edit Query =====================
+        // ==================== Rename Query =====================
         JMenuItem editQueryItem = new JMenuItem("Rename Query");
         editQueryItem.setEnabled(false); // Initially disabled.
         editQueryItem.addActionListener(e -> {
@@ -74,7 +74,7 @@ public class Sidebar extends JScrollPane {
         });
         popupMenu.add(editQueryItem);
 
-        // Enable/disable `Edit Query` when a query is selected.
+        // Enable/disable `Rename Query` when a query is selected.
         this.queryList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 editQueryItem.setEnabled(this.queryList.getSelectedValue() != null);
@@ -85,7 +85,7 @@ public class Sidebar extends JScrollPane {
         this.queryList.setComponentPopupMenu(popupMenu);
 
         // 1. Update the JTextArea when a query is selected.
-        // 2. Only enable `Delete Query` and 'Edit Query' when an item is selected.
+        // 2. Only enable `Delete Query` and 'Rename Query' when an item is selected.
         this.queryList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 Query selectedQuery = this.queryList.getSelectedValue();
@@ -165,7 +165,7 @@ public class Sidebar extends JScrollPane {
         if (selectedQuery != null) {
             String newTitle = JOptionPane.showInputDialog(
                     Utils.burpFrame(),
-                    "Edit Query Title:",
+                    "Rename Query:",
                     selectedQuery.title);
             if (newTitle != null && !newTitle.trim().isEmpty()) {
                 selectedQuery.title = newTitle;
