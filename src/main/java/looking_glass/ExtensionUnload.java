@@ -1,7 +1,6 @@
 package looking_glass;
 
 import burp.api.montoya.extension.ExtensionUnloadingHandler;
-import looking_glass.common.Constants;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
 

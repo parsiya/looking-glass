@@ -110,6 +110,8 @@ public class Handler implements HttpHandler {
 
     public void setQueries(DefaultListModel<Query> queries) {
         this.queries = queries;
+        // Save queries to the extension config.
+        this.saveQueries();
     }
 
     // Save queries to the extension config.

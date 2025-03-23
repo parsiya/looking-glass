@@ -21,9 +21,32 @@ public class Sidebar extends JScrollPane {
         this.queryDetailsArea = textArea;
 
         // Get the queries from the handler.
-        DefaultListModel<Query> q = Handler.getInstance().getQueries();
-        this.queryListModel = q;
-        this.queryList = new JList<Query>(queryListModel);        
+        this.queryListModel = Handler.getInstance().getQueries();
+
+        // Add a listener to detect changes in the query list model.
+        this.queryListModel.addListDataListener(new javax.swing.event.ListDataListener() {
+            // Commenting for future use.
+            // The internalAdded and intervalRemoved methods are correctly called when
+            // new items are added or removed. The contentsChanged method is not called when
+            // an item that exists is modified.
+            @Override
+            public void intervalAdded(javax.swing.event.ListDataEvent e) {
+                Handler.getInstance().setQueries(queryListModel);
+            }
+
+            @Override
+            public void intervalRemoved(javax.swing.event.ListDataEvent e) {
+                Handler.getInstance().setQueries(queryListModel);
+            }
+
+            // This is not automatically called when an item is modified.
+            @Override
+            public void contentsChanged(javax.swing.event.ListDataEvent e) {
+                Handler.getInstance().setQueries(queryListModel);
+            }
+        });
+
+        this.queryList = new JList<Query>(queryListModel);
         this.setViewportView(this.queryList);
 
         // ==================== Popup menu ====================
@@ -44,7 +67,7 @@ public class Sidebar extends JScrollPane {
         });
 
         // ==================== Edit Query =====================
-        JMenuItem editQueryItem = new JMenuItem("Edit Query");
+        JMenuItem editQueryItem = new JMenuItem("Rename Query");
         editQueryItem.setEnabled(false); // Initially disabled.
         editQueryItem.addActionListener(e -> {
             this.editQuery();
@@ -146,9 +169,10 @@ public class Sidebar extends JScrollPane {
                     selectedQuery.title);
             if (newTitle != null && !newTitle.trim().isEmpty()) {
                 selectedQuery.title = newTitle;
-                // Refresh the list to show the updated title.
-                // ZZZ: Is this needed?
-                this.queryList.repaint();
+                // Manually notify the model that the item has changed so
+                // `DefaultListModel.contentsChanged` can fire.
+                int selectedIndex = this.queryList.getSelectedIndex();
+                queryListModel.setElementAt(selectedQuery, selectedIndex);
             }
         }
     }
@@ -174,7 +198,10 @@ public class Sidebar extends JScrollPane {
         Query selectedQuery = this.queryList.getSelectedValue();
         if (selectedQuery != null) {
             selectedQuery.text = this.queryDetailsArea.getText();
-            // this.queryList.repaint();
+            // Manually notify the model that the item has changed so
+            // `DefaultListModel.contentsChanged` can fire.
+            int selectedIndex = this.queryList.getSelectedIndex();
+            queryListModel.setElementAt(selectedQuery, selectedIndex);
         } else {
             // Add a new query with the JTextArea content.
             this.addQuery();
