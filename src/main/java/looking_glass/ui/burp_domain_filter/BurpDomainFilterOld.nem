@@ -1,4 +1,4 @@
-package looking_glass.ui;
+package looking_glass.ui.burp_domain_filter;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -15,7 +15,7 @@ import java.util.Vector;
 
 import looking_glass.common.Log;
 
-public class TableEditor extends JPanel {
+public class BurpDomainFilterOld extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
     private JLabel label;
@@ -56,11 +56,13 @@ public class TableEditor extends JPanel {
     public Vector<Vector> getData() {
         return tableModel.getDataVector();
     }
-    
+
     public void setData(Vector<Vector> tableData) {
-        tableModel.setDataVector(tableData, new Vector<String>() {{
-            add(columnName);
-        }});
+        tableModel.setDataVector(tableData, new Vector<String>() {
+            {
+                add(columnName);
+            }
+        });
     }
 
     // TODO:
@@ -69,7 +71,7 @@ public class TableEditor extends JPanel {
     // to the utilities repo. All the `String[]` can be replaced with
     // `Object[]`.
 
-    public TableEditor(String labelValue, String columnName) {
+    public BurpDomainFilterOld(String labelValue, String columnName) {
 
         this.setLayout(new BorderLayout());
 
@@ -81,7 +83,7 @@ public class TableEditor extends JPanel {
         this.add(label, BorderLayout.NORTH);
 
         // Create a new table model and table
-        tableModel = new BurpTableModel(columnName);
+        tableModel = new TableModel();
         table = new JTable(tableModel);
 
         // Add the table to a scroll pane
@@ -160,7 +162,8 @@ public class TableEditor extends JPanel {
             }
         } catch (UnsupportedFlavorException | IOException e) {
             // Display the error message.
-            JOptionPane.showMessageDialog(null, "Clipboard error " + e.getMessage(), "Error",
+            JOptionPane.showMessageDialog(null, "Clipboard error " + e.getMessage(),
+                    "Error",
                     JOptionPane.ERROR_MESSAGE);
             Log.toError("Clipboard error " + e.getMessage());
         }

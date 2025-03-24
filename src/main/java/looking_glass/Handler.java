@@ -225,6 +225,10 @@ public class Handler implements HttpHandler {
 
         // 4. Store the request/response.
         try {
+            // If the connection is closed, open it.
+            if (connection.isClosed()) {
+                connection = DB.connect(Utils.getDBPath());
+            }
             int reqId = DB.insertRequest(req, connection);
             DB.insertResponse(res, connection, reqId);
         } catch (Exception e) {

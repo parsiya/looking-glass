@@ -1,9 +1,10 @@
 package looking_glass.message;
 
-import java.util.Vector;
+import java.util.List;
 
 import burp.api.montoya.http.message.MimeType;
 import looking_glass.ExtensionSettings;
+import looking_glass.ui.burp_domain_filter.FilterRule;
 
 public class Filter {
     // We will use the settings to filter request and responses.
@@ -34,28 +35,55 @@ public class Filter {
 
         // 1. Check if the include list is empty.
         if (settings.includeTableData != null && settings.includeTableData.size() > 0) {
-            // 2. If not, check if the host is in the include list.
-            for (Vector<String> row : settings.includeTableData) {
-                // This checks for subdomains.
-                if (req.host.endsWith(row.get(0))) {
-                    return true;
+            // The rules might not be empty but all of them might be disabled, in
+            // which case we should treat it as empty.
+            List<FilterRule> includeRules = settings.includeTableData;
+            // Go through the rules and check if any of them are enabled.
+            if (includeRules.stream().anyMatch(rule -> rule.enabled)) {
+                // 1.1 If the include list is not empty, check if the host is in the
+                // include list.
+                for (FilterRule rule : includeRules) {
+                    if (rule.enabled) {
+                        if (rule.includeSubdomains && req.host.endsWith(rule.prefix)) {
+                            // The host is a subdomain of the prefix.
+                            return true;
+                        }
+                        // Add www. as a special case. We want to return
+                        // www.[prefix] even if includeSubdomain is false.
+                        if (req.host.equals(rule.prefix) || req.host.equals("www." + rule.prefix)) {
+                            // The host is the same as the prefix or www.[prefix].
+                            return true;
+                        }
+                    }
                 }
+                // 2.2 If the host is not in the include list, return false.
+                return false;
             }
-            // 2.2 If the host is not in the include list, return false because
-            // if include is not empty, we will exclude everything not in it.
-            return false;
         }
 
         // 3. If the include list is not empty, check the exclude list.
         if (settings.excludeTableData != null && settings.excludeTableData.size() > 0) {
-            for (Vector<String> row : settings.excludeTableData) {
-                if (req.host.endsWith(row.get(0))) {
-                    // 3.1 If the host is in the exclude list, return false.
-                    return false;
+            // Similar to the above, the rules might not be empty but all of them
+            // might be disabled, in which case we should treat it as empty.
+            List<FilterRule> excludeRules = settings.excludeTableData;
+            if (excludeRules.stream().anyMatch(rule -> rule.enabled)) {
+                for (FilterRule rule : excludeRules) { 
+                    if (rule.enabled) {
+                        // 3.1 If the host is in the exclude list, return false.
+                        if (rule.includeSubdomains && req.host.endsWith(rule.prefix)) {
+                            // The host is a subdomain of the prefix.
+                            return false;
+                        }
+                        if (req.host.equals(rule.prefix)) {
+                            // The host is the same as the prefix.
+                            return false;
+                        }
+                    }
                 }
             }
             // 3.2 If the host is not in the exclude list, return true. This is
             // redundant, because we're returning true after the if.
+            //
             // return true;
         }
         // 4. If both lists are empty, return true.

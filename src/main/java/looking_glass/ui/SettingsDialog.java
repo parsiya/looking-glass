@@ -11,6 +11,7 @@ import looking_glass.ExtensionSettings;
 import looking_glass.Handler;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
+import looking_glass.ui.burp_domain_filter.BurpDomainFilter;
 
 public class SettingsDialog extends JDialog {
 
@@ -47,7 +48,7 @@ public class SettingsDialog extends JDialog {
     private static final String CANCEL_BUTTON = "Cancel";
     private static final String SAVE_BUTTON = "Apply & Close";
 
-    private TableEditor include, exclude;
+    private BurpDomainFilter include, exclude;
     private JTextField storeTextField, skipTextField;
     private LabeledCheckBox sizeCheckBox, storeCheckBox, skipCheckBox;
     private LabeledCheckBox[] mimeTypeCheckBoxes;
@@ -74,8 +75,8 @@ public class SettingsDialog extends JDialog {
         scopePanel.setBorder(BorderFactory.createTitledBorder(SCOPE_PANEL));
         scopePanel.setLayout(new BoxLayout(scopePanel, BoxLayout.Y_AXIS));
         // Create the include and exclude host tablemodels.
-        this.include = new TableEditor(INCLUDE_TABLE, COLUMN_NAME);
-        this.exclude = new TableEditor(EXCLUDE_TABLE, COLUMN_NAME);
+        this.include = new BurpDomainFilter(INCLUDE_TABLE, COLUMN_NAME);
+        this.exclude = new BurpDomainFilter(EXCLUDE_TABLE, COLUMN_NAME);
         // Add everything.
         scopePanel.add(include);
         // Add a vertical space between the tables.
@@ -284,8 +285,8 @@ public class SettingsDialog extends JDialog {
         ExtensionSettings settings = new ExtensionSettings();
 
         // Store include and exclude table data.
-        settings.includeTableData = this.include.getData();
-        settings.excludeTableData = this.exclude.getData();
+        settings.includeTableData = this.include.getRules();
+        settings.excludeTableData = this.exclude.getRules();
 
         // Store MIME type filter states.
         boolean[] mimeTypeStates = new boolean[MIME_LABELS.length];
@@ -312,8 +313,8 @@ public class SettingsDialog extends JDialog {
     // Loads the settings data into the Settings Dialog.
     private void loadSettings(ExtensionSettings settings) {
         // Load the include and exclude table data.
-        this.include.setData(settings.includeTableData);
-        this.exclude.setData(settings.excludeTableData);
+        this.include.setRules(settings.includeTableData);
+        this.exclude.setRules(settings.excludeTableData);
         // Load the MIME type filter states.
         boolean[] mimeTypeStates = settings.mimeTypes;
         for (int i = 0; i < MIME_LABELS.length; i++) {

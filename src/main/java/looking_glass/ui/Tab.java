@@ -117,9 +117,13 @@ public class Tab extends JSplitPane {
                 for (int i = 0; i < metaData.getColumnCount(); i++) {
                     resultsTable.getColumnModel().getColumn(i).setPreferredWidth(100);
                 }
-                // Close the connection and the result set.
-                conn.close();
+                // Close the result set.
                 rs.close();
+                // If we close the connection here, it might mess with the
+                // handler inserting data in to the DB if we're in the middle of
+                // a capture. Right now, the handler will check if the
+                // connection is closed right before the insert and will open it if not to account for the situation where we're running queries in the middle of a capture.
+                conn.close();
             } catch (Exception ex) {
                 // ZZZ: Let's see if this is visible in the UI and useful.
                 DefaultTableModel errorModel = new DefaultTableModel();

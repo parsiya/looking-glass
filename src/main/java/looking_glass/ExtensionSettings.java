@@ -1,9 +1,11 @@
 package looking_glass;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 
 import looking_glass.common.Utils;
+import looking_glass.ui.burp_domain_filter.FilterRule;
 
 public class ExtensionSettings {
 
@@ -14,8 +16,8 @@ public class ExtensionSettings {
     public String storeFileExtensions;
     public String hideFileExtensions;
     public boolean[] mimeTypes;
-    public Vector<Vector> includeTableData;
-    public Vector<Vector> excludeTableData;
+    public List<FilterRule> includeTableData;
+    public List<FilterRule> excludeTableData;
 
     public String toJson() throws Exception {
         return Utils.toJson(this);
