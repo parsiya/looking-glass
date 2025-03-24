@@ -96,13 +96,16 @@ public class Request {
 
         this.url = request.url();
         this.method = request.method();
-        this.path = request.path();
         this.httpVersion = request.httpVersion();
         this.body = request.bodyToString();
 
         this.host = request.httpService().host();
         this.port = request.httpService().port();
         this.isHttps = request.httpService().secure();
+
+        // Path includes all the query string parameters here. Store everything
+        // before the first `?`.
+        this.path = request.path().split("\\?")[0];
 
         // Set annotations.
         this.highlightColor = annotations.highlightColor().toString();
