@@ -75,8 +75,20 @@ public class Tab extends JSplitPane {
                 return;
             }
             // Run the query and get the results.
+            Connection conn = handler.getConnection();
             try {
-                Connection conn = handler.getConnection();
+                // If the connection is null, select a DB.
+                
+                if (conn == null) {
+                    // If connection is empty or if the connection is closed ask the user to select a database.
+                    DBModal.show();
+                }
+
+                // If the connection exists but is closed, reuse it in the DBPath.
+                if (conn.isClosed()) {
+                    conn = DB.connect(Utils.getDBPath());
+                }
+
                 // Run the query.
                 ResultSet rs = conn.createStatement().executeQuery(query);
                 // Get the results metadata to be able to create the table.
@@ -105,7 +117,9 @@ public class Tab extends JSplitPane {
                 for (int i = 0; i < metaData.getColumnCount(); i++) {
                     resultsTable.getColumnModel().getColumn(i).setPreferredWidth(100);
                 }
-
+                // Close the connection and the result set.
+                conn.close();
+                rs.close();
             } catch (Exception ex) {
                 // ZZZ: Let's see if this is visible in the UI and useful.
                 DefaultTableModel errorModel = new DefaultTableModel();
