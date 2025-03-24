@@ -12,7 +12,6 @@ import java.util.Collections;
 import org.sqlite.SQLiteConfig;
 
 import looking_glass.common.Constants;
-import looking_glass.common.Log;
 import looking_glass.common.Utils;
 import looking_glass.message.Request;
 import looking_glass.message.Response;
@@ -40,21 +39,10 @@ public class DB {
         String reqTable = generateCreateTableQuery(Constants.CREATE_REQUEST_TABLE, Constants.REQUEST_FIELDS);
         String resTable = generateCreateTableQuery(Constants.CREATE_RESPONSE_TABLE, Constants.RESPONSE_FIELDS);
 
-        // ZZZ remove after debugging
-        // Log.toOutput("reqTable: " + reqTable);
-        // Log.toOutput("resTable: " + resTable);
-        // String insertReq = generateInsertQuery(Constants.INSERT_REQUEST,
-        // Constants.REQUEST_FIELDS);
-        // String insertRes = generateInsertQuery(Constants.INSERT_RESPONSE,
-        // Constants.RESPONSE_FIELDS);
-
         // Populate the insert queries. This method usually called once or twice
         // per database so it's much better than creating them for each use.
         DB.insertRequest = generateInsertQuery(Constants.INSERT_REQUEST, Constants.REQUEST_FIELDS);
         DB.insertResponse = generateInsertQuery(Constants.INSERT_RESPONSE, Constants.RESPONSE_FIELDS);
-        // ZZZ remove after debugging
-        // Log.toOutput("insertReq: " + DB.insertRequest);
-        // Log.toOutput("insertRes: " + DB.insertResponse);
 
         // Run the table queries from above on the connection.
         try (Statement stmt = connection.createStatement()) {
@@ -73,7 +61,7 @@ public class DB {
         // Adds `name type` from the constant to the create table query to get
         // CREATE TABLE IF NOT EXISTS request (
         // request_id INTEGER PRIMARY KEY,
-        // data JSONB,
+        // data JSON,
         // url TEXT,
         // ... );
         String fieldDefinitions = String.join(

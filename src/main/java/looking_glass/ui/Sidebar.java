@@ -60,7 +60,7 @@ public class Sidebar extends JScrollPane {
         // ==================== Delete Query =====================
 
         JMenuItem deleteQueryItem = new JMenuItem("Delete Query");
-        deleteQueryItem.setEnabled(false); // Initially disabled.
+        deleteQueryItem.setEnabled(false);
         popupMenu.add(deleteQueryItem);
         deleteQueryItem.addActionListener(e -> {
             this.deleteQuery();
@@ -68,7 +68,7 @@ public class Sidebar extends JScrollPane {
 
         // ==================== Rename Query =====================
         JMenuItem editQueryItem = new JMenuItem("Rename Query");
-        editQueryItem.setEnabled(false); // Initially disabled.
+        editQueryItem.setEnabled(false);
         editQueryItem.addActionListener(e -> {
             this.editQuery();
         });
@@ -140,7 +140,7 @@ public class Sidebar extends JScrollPane {
     }
 
     // Helper method to add a new query. The user will enter the title in a
-    // dialog box and the text of the query will be taken from the JTextArea.
+    // dialog box and the text of the query from the JTextArea.
     private void addQuery() {
         String initialText = this.queryDetailsArea.getText();
 

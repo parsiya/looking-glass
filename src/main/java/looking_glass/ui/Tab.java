@@ -1,8 +1,12 @@
 package looking_glass.ui;
 
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -17,7 +21,6 @@ import looking_glass.common.Utils;
 import looking_glass.db.DB;
 import looking_glass.message.Request;
 import looking_glass.message.Response;
-import looking_glass.query.Query;
 
 public class Tab extends JSplitPane {
 
@@ -50,6 +53,68 @@ public class Tab extends JSplitPane {
         runBtn.setBackground(new Color(255, 102, 51));
         runBtn.setForeground(Color.WHITE);
         runBtn.setFont(runBtn.getFont().deriveFont(Font.BOLD));
+        runBtn.addActionListener(e -> {
+            // Get the query from the text area.
+            String query = queryTextArea.getText();
+            // Check if the query is empty.
+            if (query.isEmpty()) {
+                Utils.msgBox("Error", "Query is empty.");
+                return;
+            }
+            // We want to run this query against the connection in the handler.
+            Handler handler = Handler.getInstance();
+            if (handler.getConnection() == null) {
+                // If connection is empty, ask the user to select a database.
+                DBModal.show();
+            }
+            // If the handler's connection is still null, it means the user did not
+            // choose a DB. Show and error and return.
+            if (handler.getConnection() == null) {
+                Utils.msgBox("Error", "Please choose a DB to run the query.");
+                Log.toError("User did not choose a DB, the extension didn't run the query.");
+                return;
+            }
+            // Run the query and get the results.
+            try {
+                Connection conn = handler.getConnection();
+                // Run the query.
+                ResultSet rs = conn.createStatement().executeQuery(query);
+                // Get the results metadata to be able to create the table.
+                ResultSetMetaData metaData = rs.getMetaData();
+
+                // Create a table model from the result's metadata.
+                DefaultTableModel resultModel = new DefaultTableModel();
+                // Add the columns.
+                for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                    resultModel.addColumn(metaData.getColumnName(i));
+                }
+                // Add the rows.
+                while (rs.next()) {
+                    Object[] row = new Object[metaData.getColumnCount()];
+                    for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                        row[i - 1] = rs.getObject(i);
+                    }
+                    resultModel.addRow(row);
+                }
+
+                // Set the model to the table.
+                resultsTable.setModel(resultModel);
+                
+                // ZZZ: Is this needed? Copilot suggested it but I don't think it's needed.
+                // Resize the columns to fit the content.
+                for (int i = 0; i < metaData.getColumnCount(); i++) {
+                    resultsTable.getColumnModel().getColumn(i).setPreferredWidth(100);
+                }
+
+            } catch (Exception ex) {
+                // ZZZ: Let's see if this is visible in the UI and useful.
+                DefaultTableModel errorModel = new DefaultTableModel();
+                errorModel.addColumn("Error");
+                errorModel.addRow(new Object[]{"Error running the query: " + ex.getMessage()});
+                resultsTable.setModel(errorModel);
+                Log.toError("Error running the query: " + ex.getMessage());
+            }
+        });
 
         // Save button.
         JButton saveBtn = new JButton(SAVE_BUTTON);

@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.swing.DefaultListModel;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import burp.api.montoya.core.Registration;
@@ -200,7 +199,7 @@ public class Handler implements HttpHandler {
     // What happens to the response immediately after it's received.
     @Override
     public ResponseReceivedAction handleHttpResponseReceived(HttpResponseReceived response) {
-        // Implement your logic here
+
         ToolType toolType = response.toolSource().toolType();
 
         Response res = new Response(response, toolType);

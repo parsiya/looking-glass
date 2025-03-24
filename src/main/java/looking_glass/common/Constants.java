@@ -21,10 +21,10 @@ public class Constants {
     // ==================== SQL strings and field definitions ==============
 
     // Create the request table if it doesn't exist.
-    // The format string adds a `,` after `data JSONB`.
+    // The format string adds a `,` after `data JSON`.
     public static final String CREATE_REQUEST_TABLE = "CREATE TABLE IF NOT EXISTS request (request_id INTEGER PRIMARY KEY, %s);";
     // Create the response table if it doesn't exist.
-    // The format string adds a `,` after `data JSONB`.
+    // The format string adds a `,` after `data JSON`.
     public static final String CREATE_RESPONSE_TABLE = """
                 CREATE TABLE IF NOT EXISTS response (
                 response_id INTEGER PRIMARY KEY,
@@ -43,7 +43,7 @@ public class Constants {
 
     // Columns for request fields that are extracted and stored separately.
     public static final String[][] REQUEST_FIELDS = {
-            { "data", "JSONB" },
+            { "data", "JSON" },
             { "url", "TEXT" },
             { "method", "TEXT" },
             { "path", "TEXT" },
@@ -81,7 +81,7 @@ public class Constants {
 
     // Columns for request fields that are extracted and stored separately.
     public static final String[][] RESPONSE_FIELDS = {
-            { "data", "JSONB" },
+            { "data", "JSON" },
             { "status_code", "INTEGER" },
             { "reason_phrase", "TEXT" },
             { "content_type", "TEXT" },
