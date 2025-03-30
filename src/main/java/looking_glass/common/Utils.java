@@ -56,6 +56,8 @@ public class Utils {
     // Convert a Java object to JSON.
     public static String toJson(Object obj) throws Exception {
         Gson gson = new GsonBuilder()
+                .disableHtmlEscaping()
+                .serializeNulls()
                 .setPrettyPrinting()
                 .registerTypeAdapter(Instant.class,
                         (JsonSerializer<Instant>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))

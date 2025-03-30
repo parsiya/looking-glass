@@ -20,28 +20,28 @@ public class Constants {
 
     // ==================== SQL strings and field definitions ==============
 
-    // Create the request table if it doesn't exist.
+    // Create the requests table if it doesn't exist.
     // The format string adds a `,` after `data JSON`.
-    public static final String CREATE_REQUEST_TABLE = "CREATE TABLE IF NOT EXISTS request (request_id INTEGER PRIMARY KEY, %s);";
+    public static final String CREATE_REQUEST_TABLE = "CREATE TABLE IF NOT EXISTS requests (request_id INTEGER PRIMARY KEY, %s);";
     // Create the response table if it doesn't exist.
     // The format string adds a `,` after `data JSON`.
     public static final String CREATE_RESPONSE_TABLE = """
-                CREATE TABLE IF NOT EXISTS response (
+                CREATE TABLE IF NOT EXISTS responses (
                 response_id INTEGER PRIMARY KEY,
                 request_id INTEGER,
                 %s,
-                FOREIGN KEY (request_id) REFERENCES request (request_id)
+                FOREIGN KEY (request_id) REFERENCES requests (request_id)
                 );
             """;
 
-    public static final String INSERT_REQUEST = "INSERT INTO request (%s) VALUES (%s);";
+    public static final String INSERT_REQUEST = "INSERT INTO requests (%s) VALUES (%s);";
 
-    public static final String INSERT_RESPONSE = "INSERT INTO response (request_id, %s) VALUES (?, %s);";
+    public static final String INSERT_RESPONSE = "INSERT INTO responses (request_id, %s) VALUES (?, %s);";
 
     // Prefix for SQLite JDBC connections.
     public static final String SQLITE_JDBC_PREFIX = "jdbc:sqlite:";
 
-    // Columns for request fields that are extracted and stored separately.
+    // Columns for requests fields that are extracted and stored separately.
     public static final String[][] REQUEST_FIELDS = {
             { "data", "JSON" },
             { "url", "TEXT" },

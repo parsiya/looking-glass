@@ -141,6 +141,7 @@ public class Handler implements HttpHandler {
                 }
             }
         } catch (Exception e) {
+            // ZZZ: Load default queries here.
             // Couldn't read stored queries.
             Log.toError("Couldn't read stored queries: " + e.getMessage());
             Log.toError("Creating an empty list of queries.");

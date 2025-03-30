@@ -1,0 +1,20 @@
+{
+    [
+        {
+            "name": "Get all paths",
+            "query": "SELECT * FROM users"
+        },
+        {
+            "name": "Get user by ID",
+            "query": "SELECT * FROM users WHERE id = ?"
+        },
+        {
+            "name": "Get all posts",
+            "query": "SELECT * FROM posts"
+        },
+        {
+            "name": "Get post by ID",
+            "query": "SELECT * FROM posts WHERE id = ?"
+        }
+    ]
+}
