@@ -2,6 +2,8 @@ package looking_glass.ui;
 
 import javax.swing.*;
 
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -22,6 +24,9 @@ public class Sidebar extends JScrollPane {
 
         // Get the queries from the handler.
         this.queryListModel = Handler.getInstance().getQueries();
+        if (this.queryListModel == null) {
+            this.queryListModel = new DefaultListModel<>();
+        }
 
         // Add a listener to detect changes in the query list model.
         this.queryListModel.addListDataListener(new javax.swing.event.ListDataListener() {
@@ -83,6 +88,8 @@ public class Sidebar extends JScrollPane {
 
         // Add the popup menu to the JList.
         this.queryList.setComponentPopupMenu(popupMenu);
+
+        // ==================== JList ====================
 
         // 1. Update the JTextArea when a query is selected.
         // 2. Only enable `Delete Query` and 'Rename Query' when an item is selected.

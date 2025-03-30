@@ -1,6 +1,8 @@
 package looking_glass.ui;
 
 import java.awt.*;
+import java.io.File;
+import java.nio.file.Files;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
@@ -17,7 +19,7 @@ public class SettingsDialog extends JDialog {
 
     // ==================== UI Text ====================
     // Settings dialog name.
-    private static final String SETTINGS_FRAME_NAME = "Looking Glass Settings"; // ZZZ change this.
+    private static final String SETTINGS_FRAME_NAME = "Looking Glass Settings";
     // Include and exclude table names.
     private static final String INCLUDE_TABLE = "Include";
     private static final String EXCLUDE_TABLE = "Exclude";
@@ -28,30 +30,50 @@ public class SettingsDialog extends JDialog {
 
     // Filter panel name.
     private static final String FILTER_PANEL = "Filter request or response body";
-    // MIME type filter panel name
-    private static final String MIME_TYPE_FILTER_PANEL = "MIME type";
-    // MIME type filter names. Based on the Burp proxy filter.
-    private static final String[] MIME_LABELS = { "HTML", "Other text", "Script", "Images",
-            "XML", "Flash", "CSS", "Other binary" };
+    // // MIME type filter panel name
+    // private static final String MIME_TYPE_FILTER_PANEL = "MIME type";
+    // // MIME type filter names. Based on the Burp proxy filter.
+    // private static final String[] MIME_LABELS = { "HTML", "Other text", "Script",
+    // "Images",
+    // "XML", "Flash", "CSS", "Other binary" };
+
+    // Import/Export Settings
+    private static final String IMPORT_EXPORT_SETTINGS = "Import/Export settings";
 
     // Size filter panel name
     private static final String SIZE_FILTER_PANEL = "Skip body size";
+    private static final String SIZE_TOOLTIP = "Enter the size in MB";
     private static final String SIZE_LABEL = "Larger than (MB)";
 
     // File extension filter panel name
     private static final String FILE_EXTENSION_FILTER_PANEL = "File extension";
     // Store only and skip labels
     private static final String STORE_LABEL = "Store:";
+    private static final String STORE_TOOLTIP = "File extensions to store. Comma separated";
     private static final String SKIP_LABEL = "Skip:";
+    private static final String SKIP_TOOLTIP = "File extensions to skip. Comma separated";
+
+    // Checkbox Labels
+    private static final String CAPTURE_LABEL = "Capture on startup";
+    private static final String CAPTURE_TOOLTIP = "If checked, the extension will start capturing requests and responses on startup";
+    // private static final String CHECKDB_LABEL = "Don't check DB on startup";
+    // private static final String CHECKDB_TOOLTIP = "If checked, the extension will not ask to choose a DB on startup";
+    private static final String STARTUP_LABEL = "Startup Settings"; // ZZZ modify if you add more settings in it.
 
     // Buttons
     private static final String CANCEL_BUTTON = "Cancel";
     private static final String SAVE_BUTTON = "Apply & Close";
+    private static final String IMPORT_LABEL = "Import";
+    private static final String IMPORT_TOOLTIP = "Import settings from a file";
+    private static final String EXPORT_LABEL = "Export";
+    private static final String EXPORT_TOOLTIP = "Export settings to a file";
 
     private BurpDomainFilter include, exclude;
     private JTextField storeTextField, skipTextField;
     private LabeledCheckBox sizeCheckBox, storeCheckBox, skipCheckBox;
-    private LabeledCheckBox[] mimeTypeCheckBoxes;
+    private LabeledCheckBox captureOnStartup;
+    // private LabeledCheckBox checkDBOnStartup;
+    // private LabeledCheckBox[] mimeTypeCheckBoxes;
     private JFormattedTextField sizeTextField;
 
     // Issue: I used a singleton instance for the settings dialog, but it is not
@@ -91,37 +113,40 @@ public class SettingsDialog extends JDialog {
         this.add(scopePanel, gbc);
 
         // Right panel side.
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.PAGE_AXIS));
+
+        // Right panel side.
         JPanel filterPanel = new JPanel();
         filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.PAGE_AXIS));
         filterPanel.setBorder(BorderFactory.createTitledBorder(FILTER_PANEL));
 
         // To prevent the GridLayout from stretching the components, we wrap the
         // elements in a flow layout.
-        JPanel mimeTypeFilter = new JPanel();
-        mimeTypeFilter.setBorder(BorderFactory.createTitledBorder(MIME_TYPE_FILTER_PANEL));
-        mimeTypeFilter.setLayout(new BorderLayout());
+        // JPanel mimeTypeFilter = new JPanel();
+        // mimeTypeFilter.setBorder(BorderFactory.createTitledBorder(MIME_TYPE_FILTER_PANEL));
+        // mimeTypeFilter.setLayout(new BorderLayout());
 
-        // Create a wrapper panel with FlowLayout.
-        JPanel flowWrapper = new JPanel();
-        // flowWrapper.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        // // Create a wrapper panel with FlowLayout.
+        // JPanel flowWrapper = new JPanel();
 
-        // Create a panel with GridLayout.
-        JPanel gridPanel = new JPanel();
-        gridPanel.setLayout(new GridLayout(4, 2, 10, 10));
+        // // Create a panel with GridLayout.
+        // JPanel gridPanel = new JPanel();
+        // gridPanel.setLayout(new GridLayout(4, 2, 10, 10));
 
-        // Add the 8 MIME Type checks to the grid panel.
-        mimeTypeCheckBoxes = new LabeledCheckBox[MIME_LABELS.length];
-        for (int i = 0; i < MIME_LABELS.length; i++) {
-            mimeTypeCheckBoxes[i] = new LabeledCheckBox(MIME_LABELS[i]);
-            // Add the checkbox to your form.
-            gridPanel.add(mimeTypeCheckBoxes[i]);
-        }
+        // // Add the 8 MIME Type checks to the grid panel.
+        // mimeTypeCheckBoxes = new LabeledCheckBox[MIME_LABELS.length];
+        // for (int i = 0; i < MIME_LABELS.length; i++) {
+        // mimeTypeCheckBoxes[i] = new LabeledCheckBox(MIME_LABELS[i]);
+        // // Add the checkbox to your form.
+        // gridPanel.add(mimeTypeCheckBoxes[i]);
+        // }
 
-        // Add the grid panel to the flow wrapper.
-        flowWrapper.add(gridPanel);
+        // // Add the grid panel to the flow wrapper.
+        // flowWrapper.add(gridPanel);
 
-        // Use the flow wrapper as the main panel.
-        mimeTypeFilter.add(flowWrapper, BorderLayout.WEST);
+        // // Use the flow wrapper as the main panel.
+        // mimeTypeFilter.add(flowWrapper, BorderLayout.WEST);
 
         // `Skip body by size` group box.
         JPanel sizeFilterPanel = new JPanel();
@@ -137,9 +162,9 @@ public class SettingsDialog extends JDialog {
         NumberFormatter formatter = new NumberFormatter(format);
         formatter.setValueClass(Integer.class);
         formatter.setAllowsInvalid(false);
-        sizeTextField = new JFormattedTextField(formatter);
-        sizeTextField.setColumns(10);
-        sizeTextField.setToolTipText("Enter the size in MB");
+        this.sizeTextField = new JFormattedTextField(formatter);
+        this.sizeTextField.setColumns(10);
+        this.sizeTextField.setToolTipText(SIZE_TOOLTIP);
         sizeFilterPanel.add(sizeTextField);
 
         // File extensions.
@@ -157,14 +182,16 @@ public class SettingsDialog extends JDialog {
 
         // Show only file extensions.
         this.storeCheckBox = new LabeledCheckBox(STORE_LABEL);
+        this.storeCheckBox.setToolTipText(STORE_TOOLTIP);
         this.storeTextField = new JTextField();
 
         // Hide file extensions.
         this.skipCheckBox = new LabeledCheckBox(SKIP_LABEL);
+        this.skipCheckBox.setToolTipText(SKIP_TOOLTIP);
         this.skipTextField = new JTextField();
 
         // Like the proxy filter, if one checkbox is selected, the other is disabled.
-        storeCheckBox.getCheckBox().addActionListener(e -> {
+        this.storeCheckBox.getCheckBox().addActionListener(e -> {
             if (storeCheckBox.isSelected()) {
                 skipCheckBox.setSelected(false);
                 skipCheckBox.setEnabled(false);
@@ -175,7 +202,7 @@ public class SettingsDialog extends JDialog {
             }
         });
         // This is to make clicking the label do the same as above.
-        storeCheckBox.getLabel().addMouseListener(new java.awt.event.MouseAdapter() {
+        this.storeCheckBox.getLabel().addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (storeCheckBox.isSelected()) {
                     skipCheckBox.setSelected(false);
@@ -188,7 +215,7 @@ public class SettingsDialog extends JDialog {
             }
         });
 
-        skipCheckBox.getCheckBox().addActionListener(e -> {
+        this.skipCheckBox.getCheckBox().addActionListener(e -> {
             if (skipCheckBox.isSelected()) {
                 storeCheckBox.setSelected(false);
                 storeCheckBox.setEnabled(false);
@@ -199,7 +226,7 @@ public class SettingsDialog extends JDialog {
             }
         });
 
-        skipCheckBox.getLabel().addMouseListener(new java.awt.event.MouseAdapter() {
+        this.skipCheckBox.getLabel().addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (skipCheckBox.isSelected()) {
                     storeCheckBox.setSelected(false);
@@ -217,6 +244,37 @@ public class SettingsDialog extends JDialog {
         extensionFilterPanel.add(storeTextField);
         extensionFilterPanel.add(skipCheckBox);
         extensionFilterPanel.add(skipTextField);
+
+        // Create a panel for checkbox settings.
+        JPanel checkboxPanel = new JPanel();
+        checkboxPanel.setLayout(new GridLayout(1, 1, 10, 10));
+
+        this.captureOnStartup = new LabeledCheckBox(CAPTURE_LABEL);
+        this.captureOnStartup.setToolTipText(CAPTURE_TOOLTIP);
+        checkboxPanel.add(captureOnStartup);
+
+        // this.checkDBOnStartup = new LabeledCheckBox(CHECKDB_LABEL);
+        // this.checkDBOnStartup.setToolTipText(CHECKDB_TOOLTIP);
+        // checkboxPanel.add(checkDBOnStartup);
+        checkboxPanel.setBorder(BorderFactory.createTitledBorder(STARTUP_LABEL));
+
+        // Group box to import and export settings.
+        JPanel importExportPanel = new JPanel();
+        importExportPanel.setBorder(BorderFactory.createTitledBorder(IMPORT_EXPORT_SETTINGS));
+        importExportPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
+
+        // Add two buttons to it.
+        JButton importBtn = new JButton(IMPORT_LABEL);
+        importBtn.setToolTipText(IMPORT_TOOLTIP);
+        importBtn.addActionListener(e -> importSettings());
+
+        JButton exportBtn = new JButton(EXPORT_LABEL);
+        exportBtn.setToolTipText(EXPORT_TOOLTIP);
+        exportBtn.addActionListener(e -> exportSettings());
+
+        // Add the buttons to the panel.
+        importExportPanel.add(importBtn);
+        importExportPanel.add(exportBtn);
 
         // `Save panel` section.
         JPanel savePanel = new JPanel();
@@ -244,12 +302,15 @@ public class SettingsDialog extends JDialog {
         savePanel.add(applyBtn);
 
         // Add all the buttons to the filter panel that will be the right part.
-        filterPanel.add(mimeTypeFilter);
+        // filterPanel.add(mimeTypeFilter);
         filterPanel.add(sizeFilterPanel);
         filterPanel.add(extensionFilterPanel);
+        rightPanel.add(filterPanel);
         // Add vertical space before the save panel.
-        filterPanel.add(Box.createVerticalStrut(10));
-        filterPanel.add(savePanel);
+        rightPanel.add(Box.createVerticalStrut(10));
+        rightPanel.add(checkboxPanel);
+        rightPanel.add(importExportPanel);
+        rightPanel.add(savePanel);
 
         // Add rightPanel to the EAST position.
         gbc.gridx = 1;
@@ -257,7 +318,7 @@ public class SettingsDialog extends JDialog {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 0.1;
         gbc.weighty = 0.1;
-        this.add(filterPanel, gbc);
+        this.add(rightPanel, gbc);
 
         this.setPreferredSize(new Dimension(900, 450));
 
@@ -281,6 +342,52 @@ public class SettingsDialog extends JDialog {
         }
     }
 
+    // Import settings from a file.
+    private void importSettings() {
+        try {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("*.json", "json"));
+            int returnValue = fileChooser.showOpenDialog(this);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+
+                String json = Files.readString(selectedFile.toPath());
+                ExtensionSettings settings = new ExtensionSettings(json);
+                this.loadSettings(settings);
+            }
+        } catch (Exception e) {
+            Utils.msgBox("Error", "Error importing settings: " + e.getMessage());
+            Log.toError("Error importing settings: " + e.getMessage());
+        }
+    }
+
+    // Export settings to a file.
+    private void exportSettings() {
+        try {
+            // Save current settings which might have been modified.
+            this.saveSettings();
+            JFileChooser fileChooser = new JFileChooser();
+            int returnValue = fileChooser.showSaveDialog(this);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                if (selectedFile.exists()) {
+                    int overwrite = JOptionPane.showConfirmDialog(null,
+                            "File already exists. Do you want to overwrite it?", "Overwrite file",
+                            JOptionPane.YES_NO_OPTION);
+                    if (overwrite != JOptionPane.YES_OPTION) {
+                        return;
+                    }
+                }
+                String json = Handler.getInstance().getSettings().toJson();
+                Files.writeString(selectedFile.toPath(), json);
+
+            }
+        } catch (Exception e) {
+            Utils.msgBox("Error", "Error exporting settings: " + e.getMessage());
+            Log.toError("Error exporting settings: " + e.getMessage());
+        }
+    }
+
     public void saveSettings() {
         ExtensionSettings settings = new ExtensionSettings();
 
@@ -288,12 +395,12 @@ public class SettingsDialog extends JDialog {
         settings.includeTableData = this.include.getRules();
         settings.excludeTableData = this.exclude.getRules();
 
-        // Store MIME type filter states.
-        boolean[] mimeTypeStates = new boolean[MIME_LABELS.length];
-        for (int i = 0; i < MIME_LABELS.length; i++) {
-            mimeTypeStates[i] = this.mimeTypeCheckBoxes[i].isSelected();
-        }
-        settings.mimeTypes = mimeTypeStates;
+        // // Store MIME type filter states.
+        // boolean[] mimeTypeStates = new boolean[MIME_LABELS.length];
+        // for (int i = 0; i < MIME_LABELS.length; i++) {
+        // mimeTypeStates[i] = this.mimeTypeCheckBoxes[i].isSelected();
+        // }
+        // settings.mimeTypes = mimeTypeStates;
 
         // Store filters size, show/hide file extensions.
         settings.storeFileExtensionStatus = this.storeCheckBox.isSelected();
@@ -303,7 +410,8 @@ public class SettingsDialog extends JDialog {
 
         // Try to convert the size value to an integer.
         settings.bodySizeStatus = this.sizeCheckBox.isSelected();
-        settings.bodySizeValue = (Integer) this.sizeTextField.getValue();
+        settings.bodySizeValue = (Long) this.sizeTextField.getValue();
+        settings.captureOnStartup = this.captureOnStartup.isSelected();
 
         // Store it in the handler. This will also update the filter and store
         // the settings in the extension settings in Burp.
@@ -315,11 +423,11 @@ public class SettingsDialog extends JDialog {
         // Load the include and exclude table data.
         this.include.setRules(settings.includeTableData);
         this.exclude.setRules(settings.excludeTableData);
-        // Load the MIME type filter states.
-        boolean[] mimeTypeStates = settings.mimeTypes;
-        for (int i = 0; i < MIME_LABELS.length; i++) {
-            this.mimeTypeCheckBoxes[i].setSelected(mimeTypeStates[i]);
-        }
+        // // Load the MIME type filter states.
+        // boolean[] mimeTypeStates = settings.mimeTypes;
+        // for (int i = 0; i < MIME_LABELS.length; i++) {
+        // this.mimeTypeCheckBoxes[i].setSelected(mimeTypeStates[i]);
+        // }
         // Load the filters size, show/hide file extensions.
         this.sizeCheckBox.setSelected(settings.bodySizeStatus);
         this.sizeTextField.setValue(settings.bodySizeValue);
@@ -327,5 +435,6 @@ public class SettingsDialog extends JDialog {
         this.storeTextField.setText(settings.storeFileExtensions);
         this.skipCheckBox.setSelected(settings.skipFileExtensionStatus);
         this.skipTextField.setText(settings.hideFileExtensions);
+        this.captureOnStartup.setSelected(settings.captureOnStartup);
     }
 }

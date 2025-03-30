@@ -69,4 +69,11 @@ public class LabeledCheckBox extends JPanel {
         checkBox.setEnabled(enabled);
         label.setEnabled(enabled);
     }
+
+    @Override
+    public void setToolTipText(String text) {
+        // super.setToolTipText(text);
+        checkBox.setToolTipText(text);
+        label.setToolTipText(text);
+    }
 }

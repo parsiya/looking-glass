@@ -70,6 +70,14 @@ public class DBModal {
     }
 
     public static void show() {
+        internalShow(false);
+    }
+
+    public static void showStartup() {
+        internalShow(true);
+    }
+
+    private static void internalShow(boolean startup) {
         // Read the DB Path from the extension's settings.
         String dbPath = Utils.getDBPath();
 
@@ -85,7 +93,10 @@ public class DBModal {
             try {
                 Connection conn = DB.connect(dbPath);
                 conn.close(); // Close the connection, we will make it again later.
-                chooseDBDialog(); // Allow the user to choose a new one if wanted.
+                if (!startup) {
+                    chooseDBDialog(); // Allow the user to choose a new one if wanted.
+                }
+                
             } catch (Exception e) {
                 // If the current connection doesn't exist.
                 Log.toError("DB Connection failed, choose a new one\n" + e.getMessage());

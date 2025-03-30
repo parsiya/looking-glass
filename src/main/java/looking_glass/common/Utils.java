@@ -2,12 +2,15 @@ package looking_glass.common;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.io.BufferedReader;
+import java.io.File;
 
 import javax.swing.JOptionPane;
 
 import java.time.Instant;
 import java.util.List;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
 
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.http.message.HttpHeader;
@@ -72,12 +75,12 @@ public class Utils {
 
     // Return the value of a key from the extension's settings.
     public static String getKey(String key) {
-        return api().persistence().extensionData().getString(key);
+        return api().persistence().preferences().getString(key);
     }
 
     // Set the value of a key in the extension's settings.
     public static void setKey(String key, String value) {
-        api().persistence().extensionData().setString(key, value);
+        api().persistence().preferences().setString(key, value);
     }
 
     // Return the database path from the extension's settings.
@@ -87,6 +90,7 @@ public class Utils {
 
     // Set the database path in the extension's settings.
     public static void setDBPath(String dbPath) {
+
         setKey(Constants.DB_PATH_KEY, dbPath);
     }
 
@@ -116,16 +120,22 @@ public class Utils {
     }
 
     // Register the HTTPHandler and start capturing.
-    public static void startCapture() {
+    public static void startCapture(boolean startup) {
         // Enable the HttpHandler.
         try {
             // Get the handler.
             Handler httpHandler = Handler.getInstance();
             // If the database connection is not established, show the DB modal.
             if (httpHandler.getConnection() == null) {
-                DBModal.show();
+                // Detect if we're running in the extension or in the startup.
+                if (startup){
+                    // If we're running in the startup, don't show the DB modal.
+                    DBModal.showStartup();
+                } else {
+                    // Otherwise, show the DB modal.
+                    DBModal.show();
+                }
             }
-
             // Check if the handler has a connection. If not, it means the user
             // did not choose a DB in the DBModal.
             if (httpHandler.getConnection() == null) {
@@ -135,7 +145,7 @@ public class Utils {
                 return;
             }
             httpHandler.register(api().http().registerHttpHandler(httpHandler));
-            Log.toOutput("Registered the handler.");
+            // Log.toOutput("Registered the handler.");
             setCaptureStatus(true);
         } catch (Exception e) {
             msgBox("Error", "Error registering handler: " + e.getMessage());

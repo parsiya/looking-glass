@@ -12,10 +12,11 @@ public class ExtensionSettings {
     public boolean bodySizeStatus;
     public boolean storeFileExtensionStatus;
     public boolean skipFileExtensionStatus;
-    public int bodySizeValue;
+    public boolean captureOnStartup;
+    public long bodySizeValue;
     public String storeFileExtensions;
     public String hideFileExtensions;
-    public boolean[] mimeTypes;
+    // public boolean[] mimeTypes;
     public List<FilterRule> includeTableData;
     public List<FilterRule> excludeTableData;
 
@@ -31,9 +32,10 @@ public class ExtensionSettings {
         this.bodySizeValue = settings.bodySizeValue;
         this.storeFileExtensions = settings.storeFileExtensions;
         this.hideFileExtensions = settings.hideFileExtensions;
-        this.mimeTypes = settings.mimeTypes;
+        // this.mimeTypes = settings.mimeTypes;
         this.includeTableData = settings.includeTableData;
         this.excludeTableData = settings.excludeTableData;
+        this.captureOnStartup = settings.captureOnStartup;
     }
 
     public ExtensionSettings() {
@@ -51,8 +53,10 @@ public class ExtensionSettings {
         settings.skipFileExtensionStatus = true;
         settings.hideFileExtensions = "js,gif,jpg,png,css,woff,woff2,mp3,wav,ogg,aac,flac,mp4,avi,mov,wmv,mkv,bmp,tiff,svg,ico,ttf,otf,eot,zip,rar,7z,gz,bz2,exe,dll,msi";;
 
-        settings.mimeTypes = new boolean[8];
-        Arrays.fill(settings.mimeTypes, true); // Set everything to true.
+        settings.captureOnStartup = false;
+
+        // settings.mimeTypes = new boolean[8];
+        // Arrays.fill(settings.mimeTypes, true); // Set everything to true.
 
         settings.includeTableData = new Vector<>();
         settings.excludeTableData = new Vector<>();

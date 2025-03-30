@@ -23,12 +23,12 @@ public class ExtensionMain implements BurpExtension {
         // Initialize the Utils class.
         Utils.initialize(api);
 
+        Handler handler = Handler.getInstance();
+        if (handler.getSettings().captureOnStartup) {
+            Utils.startCapture(handler.getSettings().captureOnStartup);
+        }
+
         // Add a tab to the Burp UI.
         api.userInterface().registerSuiteTab(Constants.EXTENSION_NAME, new Tab(200));
-
-        // If capture is not paused, register the handler.
-        if (Utils.isCapturing()) {
-            Utils.startCapture();
-        }
     }
 }

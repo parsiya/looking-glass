@@ -156,76 +156,77 @@ public class Filter {
         // store file extension checkbox.
 
         // Check the response Mimetype against the settings.
-        return mimeTypeFilter(resp);
+        // return mimeTypeFilter(resp);
+        return true;
     }
 
-    public boolean mimeTypeFilter(Response resp) {
-        MimeType mt = resp.burpMimeType;
+    // public boolean mimeTypeFilter(Response resp) {
+    //     MimeType mt = resp.burpMimeType;
 
-        // ZZ Add this to the readme
-        // By converting the Burp's proxy filter to Bambda mode, I've figure out
-        // which MimeTypes are allowed by each checkbox. Instead of checking
-        // against specific MimeTypes, it checks whether it's one of the
-        // unchecked ones.
-        //
-        // There are 25 possible types from Burp and if we remove all the
-        // checkboxes, we only check if it's not one of the 22.
-        //
-        // These three are always allowed: MimeType.NONE, MimeType.UNRECOGNIZED,
-        // MimeType.AMBIGUOUS.
-        //
-        // The rest are in this format:
-        // [index in settings.mimeTypes]. [name of the checkbox] -> affected mimetype(s)
-        //
-        // 0. HTML -> MimeType.HTML
-        // 1. Other text -> MimeType.PLAIN_TEXT, MimeType.RTF
-        // 2. Script -> MimeType.SCRIPT, MimeType.JSON
-        // 3. Images -> IMAGE_UNKNOWN, IMAGE_JPEG, IMAGE_GIF, IMAGE_PNG, IMAGE_BMP,
-        // IMAGE_TIFF
-        // 4. XML -> XML, IMAGE_SVG_XML
-        // 5. Flash -> APPLICATION_FLASH, LEGACY_SER_AMF
-        // 6. CSS -> CSS
-        // 7. Other binary -> UNRECOGNIZED, SOUND, VIDEO, FONT_WOFF, FONT_WOFF2,
-        // APPLICATION_UNKNOWN
+    //     // ZZ Add this to the readme
+    //     // By converting the Burp's proxy filter to Bambda mode, I've figure out
+    //     // which MimeTypes are allowed by each checkbox. Instead of checking
+    //     // against specific MimeTypes, it checks whether it's one of the
+    //     // unchecked ones.
+    //     //
+    //     // There are 25 possible types from Burp and if we remove all the
+    //     // checkboxes, we only check if it's not one of the 22.
+    //     //
+    //     // These three are always allowed: MimeType.NONE, MimeType.UNRECOGNIZED,
+    //     // MimeType.AMBIGUOUS.
+    //     //
+    //     // The rest are in this format:
+    //     // [index in settings.mimeTypes]. [name of the checkbox] -> affected mimetype(s)
+    //     //
+    //     // 0. HTML -> MimeType.HTML
+    //     // 1. Other text -> MimeType.PLAIN_TEXT, MimeType.RTF
+    //     // 2. Script -> MimeType.SCRIPT, MimeType.JSON
+    //     // 3. Images -> IMAGE_UNKNOWN, IMAGE_JPEG, IMAGE_GIF, IMAGE_PNG, IMAGE_BMP,
+    //     // IMAGE_TIFF
+    //     // 4. XML -> XML, IMAGE_SVG_XML
+    //     // 5. Flash -> APPLICATION_FLASH, LEGACY_SER_AMF
+    //     // 6. CSS -> CSS
+    //     // 7. Other binary -> UNRECOGNIZED, SOUND, VIDEO, FONT_WOFF, FONT_WOFF2,
+    //     // APPLICATION_UNKNOWN
 
-        // First we check if it's one of the three that should always go through.
-        if (mt == MimeType.NONE || mt == MimeType.UNRECOGNIZED
-                || mt == MimeType.AMBIGUOUS) {
-            return true;
-        }
+    //     // First we check if it's one of the three that should always go through.
+    //     if (mt == MimeType.NONE || mt == MimeType.UNRECOGNIZED
+    //             || mt == MimeType.AMBIGUOUS) {
+    //         return true;
+    //     }
 
-        // Next we will check if settings.mimeTypes is true or not, if true, we
-        // will only allow those mimeTypes, otherwise, we will ignore it.
-        if (settings.mimeTypes[0] && mt == MimeType.HTML) {
-            return true;
-        }
-        if (settings.mimeTypes[1] && (mt == MimeType.PLAIN_TEXT || mt == MimeType.RTF)) {
-            return true;
-        }
-        if (settings.mimeTypes[2] && (mt == MimeType.SCRIPT || mt == MimeType.JSON)) {
-            return true;
-        }
-        if (settings.mimeTypes[3] && (mt == MimeType.IMAGE_UNKNOWN || mt == MimeType.IMAGE_JPEG
-                || mt == MimeType.IMAGE_GIF || mt == MimeType.IMAGE_PNG
-                || mt == MimeType.IMAGE_BMP || mt == MimeType.IMAGE_TIFF)) {
-            return true;
-        }
-        if (settings.mimeTypes[4] && (mt == MimeType.XML || mt == MimeType.IMAGE_SVG_XML)) {
-            return true;
-        }
-        if (settings.mimeTypes[5] && (mt == MimeType.APPLICATION_FLASH || mt == MimeType.LEGACY_SER_AMF)) {
-            return true;
-        }
-        if (settings.mimeTypes[6] && mt == MimeType.CSS) {
-            return true;
-        }
-        if (settings.mimeTypes[7] && (mt == MimeType.SOUND || mt == MimeType.VIDEO
-                || mt == MimeType.FONT_WOFF || mt == MimeType.FONT_WOFF2
-                || mt == MimeType.APPLICATION_UNKNOWN)) {
-            return true;
-        }
+    //     // Next we will check if settings.mimeTypes is true or not, if true, we
+    //     // will only allow those mimeTypes, otherwise, we will ignore it.
+    //     if (settings.mimeTypes[0] && mt == MimeType.HTML) {
+    //         return true;
+    //     }
+    //     if (settings.mimeTypes[1] && (mt == MimeType.PLAIN_TEXT || mt == MimeType.RTF)) {
+    //         return true;
+    //     }
+    //     if (settings.mimeTypes[2] && (mt == MimeType.SCRIPT || mt == MimeType.JSON)) {
+    //         return true;
+    //     }
+    //     if (settings.mimeTypes[3] && (mt == MimeType.IMAGE_UNKNOWN || mt == MimeType.IMAGE_JPEG
+    //             || mt == MimeType.IMAGE_GIF || mt == MimeType.IMAGE_PNG
+    //             || mt == MimeType.IMAGE_BMP || mt == MimeType.IMAGE_TIFF)) {
+    //         return true;
+    //     }
+    //     if (settings.mimeTypes[4] && (mt == MimeType.XML || mt == MimeType.IMAGE_SVG_XML)) {
+    //         return true;
+    //     }
+    //     if (settings.mimeTypes[5] && (mt == MimeType.APPLICATION_FLASH || mt == MimeType.LEGACY_SER_AMF)) {
+    //         return true;
+    //     }
+    //     if (settings.mimeTypes[6] && mt == MimeType.CSS) {
+    //         return true;
+    //     }
+    //     if (settings.mimeTypes[7] && (mt == MimeType.SOUND || mt == MimeType.VIDEO
+    //             || mt == MimeType.FONT_WOFF || mt == MimeType.FONT_WOFF2
+    //             || mt == MimeType.APPLICATION_UNKNOWN)) {
+    //         return true;
+    //     }
 
-        // If none of the conditions matched, return false
-        return false;
-    }
+    //     // If none of the conditions matched, return false
+    //     return false;
+    // }
 }

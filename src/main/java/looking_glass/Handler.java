@@ -43,20 +43,14 @@ public class Handler implements HttpHandler {
         if (handler == null) {
             handler = new Handler();
         }
-
         try {
-            // Read the settings from the extension config in Burp. This will
-            // also set the filter.
-            handler.setSettings(new ExtensionSettings(Utils.getSettings()));
-            // Load queries.
+            String settingsString = Utils.getSettings();
+            handler.setSettings(new ExtensionSettings(settingsString));
             handler.loadQueries();
         } catch (Exception e) {
             Log.toError("Error reading settings: " + e.getMessage());
-            // Use default settings and store them.
             handler.setSettings(ExtensionSettings.getDefault());
             Log.toError("Using default settings.");
-
-
         }
         return handler;
     }
@@ -139,7 +133,8 @@ public class Handler implements HttpHandler {
         String qString = Utils.getKey(Constants.QUERIES_KEY);
         try {
             if (qString != null) {
-                Type type = new TypeToken<List<Query>>() {}.getType();
+                Type type = new TypeToken<List<Query>>() {
+                }.getType();
                 List<Query> qu = Utils.fromJson(qString, type);
                 for (Query query : qu) {
                     this.queries.addElement(query);
