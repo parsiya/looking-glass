@@ -38,4 +38,4 @@ bin/
 
 # keep the release directory and the build jar
 # ZZZ remove this for the final version.
-# !/release/*.jar
+!/release/*.jar
