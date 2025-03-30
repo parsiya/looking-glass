@@ -57,10 +57,10 @@ public class Sidebar extends JScrollPane {
         // ==================== Popup menu ====================
         JPopupMenu popupMenu = new JPopupMenu();
 
-        // ==================== Add Query =====================
-        JMenuItem addQueryItem = new JMenuItem("Add Query");
-        addQueryItem.addActionListener(e -> this.addQuery());
-        popupMenu.add(addQueryItem);
+        // ==================== New Query =====================
+        JMenuItem newQueryItem = new JMenuItem("New Query");
+        newQueryItem.addActionListener(e -> this.newQuery());
+        popupMenu.add(newQueryItem);
 
         // ==================== Delete Query =====================
 
@@ -148,7 +148,7 @@ public class Sidebar extends JScrollPane {
 
     // Helper method to add a new query. The user will enter the title in a
     // dialog box and the text of the query from the JTextArea.
-    private void addQuery() {
+    private void newQuery() {
         String initialText = this.queryDetailsArea.getText();
 
         String title = JOptionPane.showInputDialog(
@@ -211,7 +211,7 @@ public class Sidebar extends JScrollPane {
             queryListModel.setElementAt(selectedQuery, selectedIndex);
         } else {
             // Add a new query with the JTextArea content.
-            this.addQuery();
+            this.newQuery();
         }
     }
 }
