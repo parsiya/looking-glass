@@ -1,51 +1,72 @@
-# Looking Glass
-What it is, why I do this?
+# Looking Glass - Index, Query, Repeat
+Looking Glass is a Burp extension that stores all requests/responses in a
+database. You can query this data to discover endpoints, data, and anything you
+might have missed.
 
-## Install Microsoft OpenJDK for Development
-https://learn.microsoft.com/en-us/java/openjdk/install#install-on-debian
+The extension uses the Montoya APIs. It's incompatible with older versions of
+Burp that don't use support this API.
 
-```bash
-sudo apt update
-sudo apt install wget lsb-release -y
-wget https://packages.microsoft.com/config/debian/$(lsb_release -rs)/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-sudo dpkg -i packages-microsoft-prod.deb
+I've tried to create a user experience that looks like Burp so you do not have
+to learn a new GUI.
+
+## Quick Start
+
+1. Add the jar file from the `release` directory as an extension in Burp.
+2. Navigate to the `Looking Glass` tab.
+3. Click the `Capture Off` button, the extension will ask you to choose a DB file.
+    1. You can also click `Select DB` to do the same.
+4. (Optional) Click `Extension Settings` and configure filters.
+5. Interact with the application normally.
+6. Looking Glass will store all requests/responses from all tools in the database.
+7. Query the database using SQL in the extension or use a separate program.
+
+If you want to import data from older projects.
+
+1. Navigate to the `Looking Glass` tab.
+2. Click the `Import Proxy History` button.
+3. You will be asked to 
+
+## Extension Settings
+Looking Glass uses a local SQLite database to store the data. You don't need to
+install extra drivers or setup a server. Everything is local.
+
+At a high-level, you can select your database, include/exclude (sub)domains and
+skip storing the body of requests over a certain size or with specific
+extensions.
+
+For more detailed configuration please see
+[docs/settings.md](docs/settings.md).
+
+## What's Logged?
+If you turn on capture, the extension registers a [HTTP Handler][httphandler]
+and logs every request right before leaving Burp and every response right after 
+returning to Burp. You can configure the domains in the extension settings.
+
+Request/responses are not deduplicated, if the same request is sent 10 times,
+it will be logged 10 times.
+
+[httphandler]: https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/http/handler/HttpHandler.html
+
+## Queries
+Just logging data is not useful. The utility of the extension for me is being
+able to gather insights from the bulk data.
+
+Queries are SQL and we have two tables: `requests` and `responses`. The value of
+the `request_id` column for each response points to the `requests` table.
+
+The readme will discuss some sample queries. See the entire table structure
+and more queries in [docs/query.md](docs/query.md).
+
+The extension comes with some built-in queries. You can also import/export
+queries to JSON.
+
+### All Paths for a Host
+
+```sql
+SELECT distinct path
+FROM requests
+WHERE host LIKE "%ea.com%"
 ```
-
-And then
-
-```bash
-sudo apt update
-sudo apt install msopenjdk-21
-```
-
-Finally, change the default JDK
-https://learn.microsoft.com/en-us/java/openjdk/install#change-the-default-jdk-on-linux
-
-```bash
-sudo update-java-alternatives --set msopenjdk-21-amd64
-```
-
-## gradle
-
-```bash
-sudo apt-get install zip
-# installing gradle through aptitude will install gradle 4.4.1 from 2012.
-
-# install sdkman
-curl -s "https://get.sdkman.io" | bash
-source "~/.sdkman/bin/sdkman-init.sh"
-sdk install gradle 8.12
-
-gradle wrapper --gradle-version 8.12
-```
-
-# Preprocessing
-
-## Populate Content-Type
-Burp gives you a `ContentType` field but it's only populated with certain types
-it recognizes.
-
-## Time stamp Header
 
 
 # Usecases
@@ -143,3 +164,50 @@ Add a field in the settings modal that lets people provide these file extensions
 `js,gif,jpg,png,css` and more like `webp`, `wott` and so on. All the fonts and such.
 
 Figure out how Burp does it when it categorizes something as image or binary or css. Burp gives us a "I figure out the mime-type" field, too.
+
+## Development
+See [DEVELOPMENT.md](DEVELOPMENT.md).
+
+## Literature Review
+It all started a few years ago on a Twitter thread where famous bug bounty
+hunters were talking about storing requests/responses in (elasticsearch?)
+databases. After leaving the game hacking world and going back to (mostly)
+web/cloud applications, I realized I need to create such an extension.
+
+I found a few other extensions that logged Burp requests/responses. Now you
+might say, why create your own? Well, because none of them did exactly what I
+wanted. I wanted to to query individual fields (e.g., `host`) in an
+easy-to-setup local database.
+
+[Logger++][logger-plus] by [Corey Arthur][corey] and [Soroush Dalili][irsdl]
+(hey, I know some of these people) is one of the most famous Burp extensions.
+It's used for logging everything in Burp and supports exporting the results to
+CSV or elasticsearch.
+
+[logger-plus]: https://github.com/nccgroup/LoggerPlusPlus elasticsearch.
+[corey]: https://x.com/coreyd97/
+[irsdl]: https://x.com/irsdl/
+
+[Log Requests to SQLite][log-req] by [Dominique Righetto][righetto], is similar
+to Looking Glass. It logs all requests/responses to a SQLite database, can
+pause/resume capture and has a built-in list of extensions to skip (mostly
+images). While it doesn't have a separate section for customizing the domains,
+it can use the scope in Burp. I think it's a neat feature that I might add to
+Looking Glass.
+
+[log-req]: https://github.com/righettod/log-requests-to-sqlite
+[righetto]: https://www.righettod.eu/
+
+[Dump - a Burp plugin to dump HTTP(S) requests/responses to a file system][dump]
+by Richard Springs ([source at GitHub][dump-gh]). Incidentally, Richard was my
+old teammate at EA. Dump is a Ruby Burp extension that exports the traffic to
+specific formats. It has am interesting feature to merge requests based on a
+specific header. Richard, I love you man, but Ruby?
+
+[dump]: https://blog.stratumsecurity.com/2017/08/01/dump-a-burp-plugin-to-dump-http-s-requests-responses-to-a-file-system/
+[dump-gh]: https://github.com/crashgrindrips/burp-dump
+
+[SQLite logger for Burp Suite][sql-logger] is a Java Burp extension by Andras
+Veres-Szentkiralyi that also logs requests/responses to a SQLite database.
+
+[sql-logger]: https://github.com/silentsignal/burp-sqlite-logger

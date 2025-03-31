@@ -34,7 +34,7 @@ bin/
 *Zone.Identifier
 
 # ignore the .github directory
-.github
+.github/Copilot-Instructions.md
 
 # keep the release directory and the build jar
 # ZZZ remove this for the final version.
