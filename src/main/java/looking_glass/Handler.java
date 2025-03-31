@@ -63,7 +63,11 @@ public class Handler implements HttpHandler {
         }
     }
 
-    public Connection getConnection() {
+    public Connection getConnection() throws Exception {
+        // If the connection is not null but closed, open it.
+        if (this.connection != null && this.connection.isClosed()) {
+            this.connection = DB.connect(Utils.getDBPath());
+        }
         return this.connection;
     }
 
@@ -107,6 +111,11 @@ public class Handler implements HttpHandler {
         this.saveQueries();
     }
 
+    // ========== Filter ==========
+    public Filter getFilter() {
+        return this.filter;
+    }
+   
     // Save queries to the extension config.
     public void saveQueries() {
         // Convert DefaultListModel to a List<Query>

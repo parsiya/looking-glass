@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import burp.api.montoya.core.ToolType;
+import burp.api.montoya.http.handler.ResponseReceivedAction;
+import burp.api.montoya.http.message.requests.HttpRequest;
+import burp.api.montoya.http.message.responses.HttpResponse;
 import burp.api.montoya.proxy.Proxy;
 import burp.api.montoya.proxy.ProxyHttpRequestResponse;
 
@@ -25,6 +28,7 @@ import looking_glass.Handler;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
 import looking_glass.db.DB;
+import looking_glass.message.Filter;
 import looking_glass.message.Request;
 import looking_glass.message.Response;
 import looking_glass.query.Query;
@@ -152,7 +156,13 @@ public class Tab extends JSplitPane {
         queryTextAreaWithButtonsPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
         // Create the table.
-        resultsTable = new JTable();
+        resultsTable = new JTable() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        resultsTable.setAutoCreateRowSorter(true);
         resultsTableScrollPane = new JScrollPane(resultsTable);
 
         resultsSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -193,42 +203,32 @@ public class Tab extends JSplitPane {
 
     // Run the query against the DB.
     private void runAction() {
-        // Get the query from the text area.
-        String query = queryTextArea.getText();
-        // Check if the query is empty.
-        if (query.isEmpty()) {
-            Utils.msgBox("Error", "Query is empty.");
-            return;
-        }
-        // We want to run this query against the connection in the handler.
-        Handler handler = Handler.getInstance();
-        if (handler.getConnection() == null) {
-            // If connection is empty, ask the user to select a database.
-            DBModal.show();
-        }
-        // If the handler's connection is still null, it means the user did not
-        // choose a DB. Show and error and return.
-        if (handler.getConnection() == null) {
-            Utils.msgBox("Error", "Please choose a DB to run the query.");
-            Log.toError("User did not choose a DB, the extension didn't run the query.");
-            return;
-        }
-        // Run the query and get the results.
-        Connection conn = handler.getConnection();
-        try {
-            // If the connection is null, select a DB.
 
-            if (conn == null) {
-                // If connection is empty or if the connection is closed ask the
-                // user to select a database.
+        try {
+            // Get the query from the text area.
+            String query = queryTextArea.getText();
+            // Check if the query is empty.
+            if (query.isEmpty()) {
+                Utils.msgBox("Error", "Query is empty.");
+                return;
+            }
+            // We want to run this query against the connection in the handler.
+            Handler handler = Handler.getInstance();
+            if (handler.getConnection() == null) {
+                // If connection is empty, ask the user to select a database.
                 DBModal.show();
             }
 
-            // If the connection exists but is closed, reuse it in the DBPath.
-            if (conn.isClosed()) {
-                conn = DB.connect(Utils.getDBPath());
+            // If the handler's connection is still null, it means the user did not
+            // choose a DB. Show and error and return.
+            if (handler.getConnection() == null) {
+                Utils.msgBox("Error", "Please choose a DB to run the query.");
+                Log.toError("User did not choose a DB, the extension didn't run the query.");
+                return;
             }
-
+            // If we get here, the connection is not null and also opened inside
+            // .getConnection().
+            Connection conn = handler.getConnection();
             // Run the query.
             ResultSet rs = conn.createStatement().executeQuery(query);
             // Get the results metadata to be able to create the table.
@@ -272,62 +272,107 @@ public class Tab extends JSplitPane {
             errorModel.addColumn("Error");
             errorModel.addRow(new Object[] { "Error running the query: " + ex.getMessage() });
             resultsTable.setModel(errorModel);
-            Log.toError("Error running the query: " + ex.getMessage());
+            // Log.toError("Error running the query: " + ex.getMessage());
         }
     }
 
     // Import proxy history into the DB.
     private static void importProxyHistory() {
-        // Get the proxy history.
-        Proxy proxy = Utils.api().proxy();
-        List<ProxyHttpRequestResponse> history = proxy.history();
+        try {
+            // Get the proxy history.
+            Proxy proxy = Utils.api().proxy();
+            List<ProxyHttpRequestResponse> history = proxy.history();
 
-        // Return if history is empty.
-        if (history.isEmpty()) {
-            // Show a message box.
-            Utils.msgBox("Error", "Proxy history is empty.");
-            Log.toOutput("Proxy history is empty.");
-            return;
-        }
-
-        // Check if a database is selected or not.
-        Handler handler = Handler.getInstance();
-        if (handler.getConnection() == null) {
-            // If connection is empty, ask the user to select a database.
-            DBModal.show();
-        }
-
-        // If the handler's connection is still null, it means the user did not
-        // choose a DB. Show and error and return.
-        if (handler.getConnection() == null) {
-            Utils.msgBox("Error", "Please choose a DB to import the proxy history.");
-            Log.toError("User did not choose a DB, the extension didn't import the proxy history.");
-            return;
-        }
-
-        Log.toOutput("Storing the proxy history in the DB.");
-
-        // Go through the proxy history.
-        IntStream.range(0, history.size()).forEach(i -> {
-            try {
-                ProxyHttpRequestResponse item = history.get(i);
-                Request req = new Request(item.finalRequest(), item.annotations(), ToolType.PROXY);
-                Response res = new Response(item.originalResponse(), ToolType.PROXY);
-
-                // Store the request and responses in the DB.
-                int reqId = DB.insertRequest(req, handler.getConnection());
-                DB.insertResponse(res, handler.getConnection(), reqId);
-            } catch (Exception e) {
-                String errorResult = String.format("Stored %d pairs in the DB before an error.\n" + e.getMessage(), i);
-                Utils.msgBox("Error", errorResult);
-                Log.toError(errorResult);
+            // Return if history is empty.
+            if (history.isEmpty()) {
+                // Show a message box.
+                Utils.msgBox("Error", "Proxy history is empty.");
+                Log.toOutput("Proxy history is empty.");
                 return;
             }
-        });
-        String importResult = String.format("Proxy History successfully imported. Stored %d pairs in the DB.",
-                history.size());
-        Utils.msgBox("Success", importResult);
-        Log.toOutput(importResult);
+
+            // Check if a database is selected or not.
+            Handler handler = Handler.getInstance();
+            if (handler.getConnection() == null) {
+                // If connection is empty, ask the user to select a database.
+                DBModal.show();
+            }
+            // Bug that was fixed, but I am documenting because I might make the
+            // same mistake again.
+            //
+            // If I use `Connection conn = handler.getConnection();` in the if
+            // above and the one below, the connection in the handler will be
+            // set in DBModal.Show() but will not reflect in the conn so the
+            // next if will still be null while a connection has been
+            // established. So we just call the getConnection() method again to
+            // get the updated connection.
+
+            // If the handler's connection is still null, it means the user did not
+            // choose a DB. Show and error and return.
+            if (handler.getConnection() == null) {
+                Utils.msgBox("Error", "Please choose a DB to import the proxy history.");
+                Log.toError("User did not choose a DB, the extension didn't import the proxy history.");
+                return;
+            }
+
+            // If we get here, the connection is not null and also opened inside
+            // .getConnection().
+            Connection conn = handler.getConnection();
+            Log.toOutput("Storing the proxy history in the DB.");
+
+            // Go through the proxy history.
+            for (ProxyHttpRequestResponse item : history) {
+
+                HttpRequest burpReq = item.request();
+                HttpResponse burpRes = item.originalResponse();
+
+                if (burpReq == null) {
+                    // Empty request (should not happen, but checking). Skip.
+                    continue;
+                }
+
+                Filter filter = handler.getFilter();
+
+                // Create the request.
+                Request req = new Request(burpReq, item.annotations(), ToolType.PROXY);
+
+                // Check the request against the filter.
+                //
+                // Copied from Handler.java.
+                //
+                // 1. If the host doesn't match the filter, do not store it.
+                if (!filter.hostMatches(req))
+                    continue;
+                // 2. If the request body should be empty, set the request body
+                // to an empty string.
+                if (!filter.storeBody(req))
+                    req.body = "";
+
+                if (burpRes == null) {
+                    // Empty response. Skip.
+                    continue;
+                }
+                // Create the response.
+                Response res = new Response(burpRes, ToolType.PROXY);
+                // Check the response against the filter.
+                // 3. If the response body should be empty, set the response
+                // body to an empty string.
+                if (!filter.storeBody(res))
+                    res.body = "";
+
+                // Store the request and responses in the DB.
+                int reqId = DB.insertRequest(req, conn);
+                DB.insertResponse(res, conn, reqId);
+            }
+            String importResult = String.format("Proxy History successfully imported. Stored %d pairs in the DB.",
+                    history.size());
+            Utils.msgBox("Success", importResult);
+            Log.toOutput(importResult);
+        } catch (Exception e) {
+            Utils.msgBox("Error", e.getMessage());
+            // Log.toError(errorResult);
+            return;
+        }
     }
 
     // Change the color of the capture button based on the capture status.

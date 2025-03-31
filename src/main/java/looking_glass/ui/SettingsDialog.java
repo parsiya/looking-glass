@@ -160,6 +160,7 @@ public class SettingsDialog extends JDialog {
         // Set up the size text field to only accept numbers.
         NumberFormat format = NumberFormat.getInstance();
         NumberFormatter formatter = new NumberFormatter(format);
+        formatter.setMinimum(0); // Disallow negative numbers
         formatter.setValueClass(Integer.class);
         formatter.setAllowsInvalid(false);
         this.sizeTextField = new JFormattedTextField(formatter);

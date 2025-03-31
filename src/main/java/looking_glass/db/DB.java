@@ -143,12 +143,20 @@ public class DB {
             insertRes.setString(5, res.contentType);
             insertRes.setString(6, res.burpMimeType.toString()); // ZZZ change if we change the mimetype.
             insertRes.setInt(7, res.contentLength);
-            insertRes.setDate(8, new java.sql.Date(res.date.toEpochMilli()));
             insertRes.setString(9, res.cookieNames);
             insertRes.setString(10, res.toolSource);
             insertRes.setString(11, res.server);
             insertRes.setBoolean(12, res.contentSecurityPolicy);
             insertRes.setString(13, res.headerNames);
+
+            // The response header `Date` is optional, so we have to check if
+            // it's null before inserting it.
+            if (res.date != null) {
+                insertRes.setDate(8, new java.sql.Date(res.date.toEpochMilli()));
+            } else {
+                insertRes.setDate(8, null);
+            }
+            
             insertRes.execute();
         }
     }

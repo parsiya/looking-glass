@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.time.Instant;
 
-import com.google.gson.annotations.Expose;
-
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.message.MimeType;
 import burp.api.montoya.http.message.responses.HttpResponse;
