@@ -65,11 +65,26 @@ So you (and future me) don't troubleshoot for several hours, again.
 ### Requests without Responses
 The extension handler doesn't log requests without responses. An HTTP handler
 
-
 ### Content-Type
 Burp gives you a `ContentType` field but it's only populated with certain types
-it recognizes.
+it recognizes. ZZZ add details here.
 
 ### Time stamp Header
 Not all requests have timestamp headers. Responses _should_ according to the
-RFC, but may not.
+RFC, but may not. ZZZ add how I used the Apache HttpComponents DateUtils.
+
+### Burp Parameters
+Sometimes Burp gets confused when detecting parameter and gives us gibberish.
+E.g., one of the requests sent after navigating to `google.com` is a POST
+request that looks like this:
+
+```
+POST /$rpc/google.internal.onegoogle.asyncdata.v1.AsyncDataService/GetAsyncData HTTP/2
+Host: ogads-pa.clients6.google.com
+// removed
+
+[538,"",538,"en","com",0,null,0,0,"","19046228-1:",1,0,null,89978449,null,[1]]
+```
+
+Burp will tell us the request has 17 parameters of type JSON with no names and
+the values indicated above so the `parameter_names` column will be a like `,,,`.

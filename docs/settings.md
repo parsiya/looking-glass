@@ -18,8 +18,8 @@ If you want Looking Glass to see every request, it needs to be last, or at least
 after every other extension that manipulates requests.
 
 ## Select a Database
-Before capturing, you have to select a SQLite database. This is a file on your
-local machine.
+Before capturing, you have to select a SQLite database. This is usually a file
+on your local machine.
 
 You can do it in two ways:
 
@@ -36,13 +36,6 @@ make it look like the `Intercept` button.
 
 The extension will register the handler that will intercept all requests and
 responses regardless of the tool.
-
-## Import Proxy History
-This is useful if you want to import older projects. This button will import the
-entire proxy history to the database. Unfortunately, extensions cannot see the
-data in other tools (e.g., Repeater) so we cannot import data from those tools.
-The only way to capture data from other tools like Repeater, Scanner and other
-extensions is to use the HTTP Handler and capture them live.
 
 ## Extension Settings
 Click on the button with the same name. Don't forget to select `Apply & Close`
@@ -104,3 +97,12 @@ import settings from a JSON file. This is useful if you want to:
 
 If you import a setting, it's automatically saved even if you click `Cancel` on
 this dialog.
+
+## Import Proxy History
+This is useful if you want to import older projects. This button will import the
+entire proxy history to the database. Unfortunately, extensions cannot see the
+data in other tools (e.g., Repeater) so we cannot import data from those tools.
+The only way to capture data from other tools like Repeater, Scanner and other
+extensions is to use the HTTP Handler and capture them live.
+
+`Import proxy history` **uses the filters set in extension settings**.

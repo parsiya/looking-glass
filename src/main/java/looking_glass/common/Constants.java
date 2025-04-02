@@ -85,6 +85,7 @@ public class Constants {
             { "status_code", "INTEGER" },
             { "reason_phrase", "TEXT" },
             { "content_type", "TEXT" },
+            // inferred content type from Burp.
             { "inferred_content_type", "TEXT" },
             { "content_length", "INTEGER" },
             { "date", "NUMERIC" },
@@ -95,12 +96,12 @@ public class Constants {
             // Should I store the value or just a field that says it exists.
             // If it's just a field that says it's there, it can be skipped for
             // "header_names"
-            { "content_security_policy", "TEXT" },
+            { "content_security_policy", "TEXT" }, // ZZZ: Remove or switch to Boolean
             // Comma-separated list of all headers.
             // This is useful to see if the request has a header that we can use to extract
             // from the JSON blob.
             { "header_names", "TEXT" },
-            // inferred content type from Burp.
+            
     };
     // Headers skipped in the above:
     // "http_version": How useful?

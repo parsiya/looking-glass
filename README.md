@@ -26,6 +26,13 @@ If you want to import data from older projects.
 2. Click the `Import Proxy History` button.
 3. You will be asked to 
 
+**Privacy Warning**: The value of parameters, headers and cookies are stored in
+the database. This includes passwords and tokens. The same are also stored in
+your Burp projects, so keep them all safe.
+
+I have a feature planned that allows the user to block storage of values (except
+some that are not sensitive but useful) in the database. See issue #8.
+
 ## Extension Settings
 Looking Glass uses a local SQLite database to store the data. You don't need to
 install extra drivers or setup a server. Everything is local.
@@ -54,133 +61,100 @@ able to gather insights from the bulk data.
 Queries are SQL and we have two tables: `requests` and `responses`. The value of
 the `request_id` column for each response points to the `requests` table.
 
-The readme will discuss some sample queries. See the entire table structure
-and more queries in [docs/query.md](docs/query.md).
+The extension comes with some built-in queries to get you started. You can also
+import/export queries from/to JSON. Here are a few examples. See the database
+structure at [docs/database.md](docs/database.md) and more queries at
+[docs/queries.md](docs/queries.md).
 
-The extension comes with some built-in queries. You can also import/export
-queries to JSON.
+If you have any suggestions for queries, please create an issue or a pull
+request.
 
-### All Paths for a Host
+### HTTP Requests
+Burp provides a `ishttps` field for each request and it's stored in the
+`is_https` column in the database. The value is `1` if true and `0` if not.
 
 ```sql
-SELECT distinct path
-FROM requests
+SELECT distinct url FROM requests
+WHERE is_https == 0
+```
+
+### List Paths for a Host
+You want to see all the paths for a host. This is usually used to create a list
+to pass to a different tool.
+
+```sql
+SELECT distinct path FROM requests
 WHERE host LIKE "%ea.com%"
 ```
 
+### Requests with a Specific Parameter Name
+The `parameter_names` contains a comma separated list of all parameter names in
+a request. We can easily search it. This might be useful when you're looking for
+a specific vulnerability across all your targets. E.g., a new CVE has been
+released that affects all parameters named `update`.
 
-# Usecases
-
-## Simple
-
-### All the routes in a hostname
-What are the routes for our target
-
-### All parameters named X
-If we find that a specific parameter is vulnerable, we want to see where it is.
-
-### All requests/responses within a certain duration
-If we want to tell the blue team about all our requests during an operation.
-
-### Request/Response with a specific payload
-Help with blue team tracking
-
-### Request/Response with a specific response header
-Like ms-cv, correlation ID and so on. Helps the blue team.
-
-### Filter by Referer
-What are all the requests that have originated from a specific page.
-
-### Sec-whatever Headers
-Figure out which ones are populated if the action was a user action and what the
-value is. Credit where you learned from, another student in the Burp course.
-
-```
-Sec-Fetch-Dest
-Sec-Fetch-Mode
-Sec-Fetch-Site
-Sec-Fetch-User
+```sql
+SELECT url FROM requests
+WHERE parameter_names LIKE "%update%"
 ```
 
-### X-Forwarded- Headers
-We can find those and see where we can mess with proxy servers.
+We can combine it with the HTTP method (or verb if you prefer).
 
-### Access-Control- Headers
-Useful for tagging CORS issue investigations.
-
-```
-Access-Control-Allow-Credentials
-Access-Control-Allow-Headers
-Access-Control-Allow-Methods
-Access-Control-Allow-Origin
-Access-Control-Expose-Headers
-Access-Control-Max-Age
-Access-Control-Request-Headers
-Access-Control-Request-Method
+```sql
+SELECT url FROM requests
+WHERE parameter_names LIKE "%update%"
+AND method == "POST"
 ```
 
-### Server Response header
-Find out server types and versions if available.
+### Requests with JSON Payloads
+The browser/tool should set the request's `Content-Type` header to
+`application/json`.
 
-`X-Powered-By` is similar and can be used to find info about the server.
+```sql
+SELECT url, method FROM requests
+WHERE content_type LIKE "%json%"
+```
 
-### Content-Security-Policy
-If it exists and extract the value.
+### Requests with Authorization Header
+All header names are also stored in `header_names` column for both requests and
+responses.
 
-### Cookies
-Cookie names in the request.
+```sql
+SELECT distinct url, method FROM requests
+WHERE header_names LIKE "%authorization%"
+```
 
-Cookie names in the response and their domains/paths. E.g., what domain cookies are we getting?
-
-## More Complex
-
-### OpenAPI
-Need processing on the client. Show a picture of the mapping from HTTP
-request/response to OpenAPI.
-
-# TODO
-
-## Request/Response Length Limit
-Add a number in the settings, if the length of the body of the request or
-response is over that number, the body will not be stored. The rest of the
-fields will still be populated, but we will replace the value of the body with
-an empty string, this helps the size of the DB.
-
-## Settings Modal
-This requires us to create a settings modal. The modal can have fields for the
-settings like the one above and a button to set the DB. It can also have a
-button like the intercept in burp to turn off/on logging.
-
-## Do Not Store Body of some File types
-Similar to the above, we can also entirely skip storing the body of some file extensions. E.g., images.
-
-This can be determined from two lists:
-
-* file extensions
-* mime-types that come from the `Content-Type` response header.
-
-Add a field in the settings modal that lets people provide these file extensions. Have a built-in default value, the default Burp filter for HTTP History is a good start.
-
-`js,gif,jpg,png,css` and more like `webp`, `wott` and so on. All the fonts and such.
-
-Figure out how Burp does it when it categorizes something as image or binary or css. Burp gives us a "I figure out the mime-type" field, too.
+As mentioned above. See [docs/queries.md](docs/queries.md) for more. 
 
 ## Development
 See [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Literature Review
-It all started a few years ago on a Twitter thread where famous bug bounty
-hunters were talking about storing requests/responses in (elasticsearch?)
-databases. After leaving the game hacking world and going back to (mostly)
-web/cloud applications, I realized I need to create such an extension.
+Why did I create this and why didn't I use another tool?
 
+### Motivation
+It all started a few years ago from a Twitter thread where some bug bounty
+hunters were talking about storing requests/responses in (elasticsearch? I think)
+databases. After leaving the game hacking world and going back to (mostly)
+web/cloud applications (RIP), I realized I need to create such an extension.
+
+I want to fix the gap between "searching in each Burp project manually" and
+"setting up some servers in the cloud" so folks can get started without paying
+for cloud.
+
+While you can get many of this information from Burp using Bambdas (or other
+places like the sitemap), you cannot bulk search in hundreds of Burp projects.
+This tool gives us the ability to discover points of interests across all of our
+tests even when they've happened in the past.
+
+### Similar Tools
 I found a few other extensions that logged Burp requests/responses. Now you
 might say, why create your own? Well, because none of them did exactly what I
 wanted. I wanted to to query individual fields (e.g., `host`) in an
 easy-to-setup local database.
 
 [Logger++][logger-plus] by [Corey Arthur][corey] and [Soroush Dalili][irsdl]
-(hey, I know some of these people) is one of the most famous Burp extensions.
+(hey, I know some of them) is one of the most famous Burp extensions.
 It's used for logging everything in Burp and supports exporting the results to
 CSV or elasticsearch.
 
@@ -201,8 +175,8 @@ Looking Glass.
 [Dump - a Burp plugin to dump HTTP(S) requests/responses to a file system][dump]
 by Richard Springs ([source at GitHub][dump-gh]). Incidentally, Richard was my
 old teammate at EA. Dump is a Ruby Burp extension that exports the traffic to
-specific formats. It has am interesting feature to merge requests based on a
-specific header. Richard, I love you man, but Ruby?
+specific formats. It has an interesting feature to merge requests based on a
+specific header.
 
 [dump]: https://blog.stratumsecurity.com/2017/08/01/dump-a-burp-plugin-to-dump-http-s-requests-responses-to-a-file-system/
 [dump-gh]: https://github.com/crashgrindrips/burp-dump
