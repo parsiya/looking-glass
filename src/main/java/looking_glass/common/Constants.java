@@ -101,7 +101,6 @@ public class Constants {
             // This is useful to see if the request has a header that we can use to extract
             // from the JSON blob.
             { "header_names", "TEXT" },
-            
     };
     // Headers skipped in the above:
     // "http_version": How useful?

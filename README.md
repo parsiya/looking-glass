@@ -6,9 +6,6 @@ might have missed.
 The extension uses the Montoya APIs. It's incompatible with older versions of
 Burp that don't use support this API.
 
-I've tried to create a user experience that looks like Burp so you do not have
-to learn a new GUI.
-
 ## Quick Start
 
 1. Add the jar file from the `release` directory as an extension in Burp.
@@ -24,14 +21,17 @@ If you want to import data from older projects.
 
 1. Navigate to the `Looking Glass` tab.
 2. Click the `Import Proxy History` button.
-3. You will be asked to 
+3. If you have not set a database connection, you will be asked to set one.
+4. The data will be stored in the database.
 
 **Privacy Warning**: The value of parameters, headers and cookies are stored in
-the database. This includes passwords and tokens. The same are also stored in
-your Burp projects, so keep them all safe.
+the database. This includes passwords and tokens. While this sounds scary, the
+same information is stored in Burp project files, so keep them all safe.
 
 I have a feature planned that allows the user to block storage of values (except
-some that are not sensitive but useful) in the database. See issue #8.
+some that are not sensitive but useful) in the database. See [issue #8][i8].
+
+[i8]: https://github.com/parsiya/looking-glass/issues/8
 
 ## Extension Settings
 Looking Glass uses a local SQLite database to store the data. You don't need to
@@ -44,19 +44,19 @@ extensions.
 For more detailed configuration please see
 [docs/settings.md](docs/settings.md).
 
-## What's Logged?
+## What is Captured?
 If you turn on capture, the extension registers a [HTTP Handler][httphandler]
 and logs every request right before leaving Burp and every response right after 
 returning to Burp. You can configure the domains in the extension settings.
 
-Request/responses are not deduplicated, if the same request is sent 10 times,
-it will be logged 10 times.
+**Request/responses are not deduplicated**, if the same request is seen 10
+times, it will be logged 10 times.
 
 [httphandler]: https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/http/handler/HttpHandler.html
 
 ## Queries
-Just logging data is not useful. The utility of the extension for me is being
-able to gather insights from the bulk data.
+Just logging data is not useful. The utility of the extension is in mining them
+for insights.
 
 Queries are SQL and we have two tables: `requests` and `responses`. The value of
 the `request_id` column for each response points to the `requests` table.
@@ -64,16 +64,18 @@ the `request_id` column for each response points to the `requests` table.
 The extension comes with some built-in queries to get you started. You can also
 import/export queries from/to JSON. Here are a few examples. See the database
 structure at [docs/database.md](docs/database.md) and more queries at
-[docs/queries.md](docs/queries.md).
+[docs/queries.md](docs/queries.md). If you have any suggestions for queries,
+please create an issue or a pull request.
 
-If you have any suggestions for queries, please create an issue or a pull
-request.
+The comment is the name of the query in the built-in set of queries. You're
+welcome to trim them for your own usage.
 
 ### HTTP Requests
-Burp provides a `ishttps` field for each request and it's stored in the
+Burp provides an `ishttps` field for each request and it's stored in the
 `is_https` column in the database. The value is `1` if true and `0` if not.
 
 ```sql
+-- Http Requests
 SELECT distinct url FROM requests
 WHERE is_https == 0
 ```
@@ -83,6 +85,7 @@ You want to see all the paths for a host. This is usually used to create a list
 to pass to a different tool.
 
 ```sql
+-- Paths for a Host
 SELECT distinct path FROM requests
 WHERE host LIKE "%ea.com%"
 ```
@@ -94,6 +97,7 @@ a specific vulnerability across all your targets. E.g., a new CVE has been
 released that affects all parameters named `update`.
 
 ```sql
+-- Search Parameter Name
 SELECT url FROM requests
 WHERE parameter_names LIKE "%update%"
 ```
@@ -111,6 +115,7 @@ The browser/tool should set the request's `Content-Type` header to
 `application/json`.
 
 ```sql
+-- JSON Payloads
 SELECT url, method FROM requests
 WHERE content_type LIKE "%json%"
 ```
@@ -120,17 +125,18 @@ All header names are also stored in `header_names` column for both requests and
 responses.
 
 ```sql
+-- Authorization Header
 SELECT distinct url, method FROM requests
 WHERE header_names LIKE "%authorization%"
 ```
 
-As mentioned above. See [docs/queries.md](docs/queries.md) for more. 
+As mentioned above. See [docs/queries.md](docs/queries.md) for more.
 
 ## Development
 See [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Literature Review
-Why did I create this and why didn't I use another tool?
+Why did I create this and why didn't I use an existing tool?
 
 ### Motivation
 It all started a few years ago from a Twitter thread where some bug bounty
