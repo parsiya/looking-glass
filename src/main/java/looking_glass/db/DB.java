@@ -128,11 +128,11 @@ public class DB {
     // The query looks like:
     // INSERT INTO response (request_id,
     // data,status_code,reason_phrase,content_type,inferred_content_type,
-    // content_length,date,cookie_names,tool_source,server,
+    // content_length,date,cookie_names,tool_source,
     // content_security_policy,header_names)
     // VALUES (?, ...);
     public static void insertResponse(Response res, Connection connection, int requestId) throws Exception {
-        
+
         // Insert data into the response table with the foreign key
         try (PreparedStatement insertRes = connection.prepareStatement(DB.insertResponse)) {
             String resString = Utils.toJson(res);
@@ -145,18 +145,18 @@ public class DB {
             insertRes.setInt(7, res.contentLength);
             insertRes.setString(9, res.cookieNames);
             insertRes.setString(10, res.toolSource);
-            insertRes.setString(11, res.server);
-            insertRes.setBoolean(12, res.contentSecurityPolicy);
-            insertRes.setString(13, res.headerNames);
+            // insertRes.setString(11, res.server);
+            insertRes.setBoolean(11, res.contentSecurityPolicy);
+            insertRes.setString(12, res.headerNames);
 
             // The response header `Date` is optional, so we have to check if
-            // it's null before inserting it.
+            // it's null before insertion.
             if (res.date != null) {
                 insertRes.setDate(8, new java.sql.Date(res.date.toEpochMilli()));
             } else {
                 insertRes.setDate(8, null);
             }
-            
+
             insertRes.execute();
         }
     }

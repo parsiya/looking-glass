@@ -44,7 +44,6 @@ The other table is very similar:
 | date                    | Value of `Date` header (if any) as a Unix timestamp. E.g., `1743395234000`. |
 | cookie_names            | Comma-separated list of all cookie names.                                   |
 | tool_source             | Burp Tool that initiated the request. E.g., `Proxy`.                        |
-| server                  | Value of `Server` header (if any).                                          |
 | content_security_policy | Boolean: `1` if the `Content-Security-Policy` header exists, otherwise `0`. |
 | header_names            | Comma-separated list of all headers names.                                  |
 | data                    | The response object as a JSON string, [structure below][res-json].          |
@@ -89,17 +88,14 @@ an enum and a subset of all possible content-type values. This is stored in
 
 [mime]: https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/http/message/MimeType.html
 
-By converting the Burp's proxy filter to Bambda mode, I've figure out which
+By converting the Burp's proxy filter to Bambda mode, I figure out which
 MimeTypes are allowed by each checkbox. Instead of checking against specific
 MimeTypes, it checks whether it's one of the unchecked ones.
 
 ![Burp proxy filter MIME types](/.github/03-mimetypes.png)
 
-There are 25 possible types from Burp and if we remove all the
-checkboxes, we only check if it's not one of the 22.
-
-Three types are always allowed (first row) and the rest are in this format:
-[name of the checkbox] -> affected mimetype(s).
+Burp detects 25 different types. Three types are always allowed (first row) and
+the rest are in this format: [name of the checkbox] -> affected mimetype(s).
 
 | Checkbox Name  | MIME types                                                                         |
 | -------------- | ---------------------------------------------------------------------------------- |
@@ -300,7 +296,7 @@ looks like. The JSON representation of `GET https://example.net/foo/bar?p=v` is:
   "contentLength": 0,
   "parameterNames": "param1,param2",
   "cookieNames": "cookie1,cookie2",
-  "headerNames": "Host,Cookie,//removed"
+  "headerNames": "Host,Cookie,..."
 }
 ```
 
@@ -338,8 +334,7 @@ The response object as a JSON string is very similar to the request.
     }
   ],
   "contentSecurityPolicy": false,
-  "server": null,
-  "headerNames": "Content-Type,Set-Cookie,//removed",
+  "headerNames": "Content-Type,Set-Cookie,...",
   "cookieNames": "cookie1"
 }
 ```

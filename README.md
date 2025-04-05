@@ -140,13 +140,13 @@ Why did I create this and why didn't I use an existing tool?
 
 ### Motivation
 It all started a few years ago from a Twitter thread where some bug bounty
-hunters were talking about storing requests/responses in (elasticsearch? I think)
-databases. After leaving the game hacking world and going back to (mostly)
-web/cloud applications (RIP), I realized I need to create such an extension.
+hunters were talking about storing requests/responses in (elasticsearch? I
+think) databases. After leaving the game hacking world and going back to
+(mostly) web/cloud (RIP skillz), I realized I need to create such an extension.
 
-I want to fix the gap between "searching in each Burp project manually" and
-"setting up some servers in the cloud" so folks can get started without paying
-for cloud.
+I wanted to fix the gap between "searching in each Burp project manually" and
+"setting up servers in the cloud" so folks can get started without paying for
+cloud.
 
 While you can get many of this information from Burp using Bambdas (or other
 places like the sitemap), you cannot bulk search in hundreds of Burp projects.
@@ -159,7 +159,7 @@ might say, why create your own? Well, because none of them did exactly what I
 wanted. I wanted to to query individual fields (e.g., `host`) in an
 easy-to-setup local database.
 
-[Logger++][logger-plus] by [Corey Arthur][corey] and [Soroush Dalili][irsdl]
+**[Logger++][logger-plus]** by [Corey Arthur][corey] and [Soroush Dalili][irsdl]
 (hey, I know some of them) is one of the most famous Burp extensions.
 It's used for logging everything in Burp and supports exporting the results to
 CSV or elasticsearch.
@@ -168,7 +168,7 @@ CSV or elasticsearch.
 [corey]: https://x.com/coreyd97/
 [irsdl]: https://x.com/irsdl/
 
-[Log Requests to SQLite][log-req] by [Dominique Righetto][righetto], is similar
+**[Log Requests to SQLite][log-req]** by [Dominique Righetto][righetto], is similar
 to Looking Glass. It logs all requests/responses to a SQLite database, can
 pause/resume capture and has a built-in list of extensions to skip (mostly
 images). While it doesn't have a separate section for customizing the domains,
@@ -178,8 +178,8 @@ Looking Glass.
 [log-req]: https://github.com/righettod/log-requests-to-sqlite
 [righetto]: https://www.righettod.eu/
 
-[Dump - a Burp plugin to dump HTTP(S) requests/responses to a file system][dump]
-by Richard Springs ([source at GitHub][dump-gh]). Incidentally, Richard was my
+**[Dump - a Burp plugin to dump HTTP(S) requests/responses to a file system][dump]**
+by Richard Springs ([source on GitHub][dump-gh]). Incidentally, Richard was my
 old teammate at EA. Dump is a Ruby Burp extension that exports the traffic to
 specific formats. It has an interesting feature to merge requests based on a
 specific header.

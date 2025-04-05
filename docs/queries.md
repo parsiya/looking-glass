@@ -17,7 +17,7 @@ Here's a query to extract all request/response bodies that are not null.
 -- All response bodies
 SELECT JSON_EXTRACT(data, '$.body') AS body
 FROM responses -- replace with responses
-WHERE JSON_EXTRACT(data, '$.body') != '';
+WHERE JSON_EXTRACT(data, '$.body') != "";
 ```
 
 ## All the JavaScript Files

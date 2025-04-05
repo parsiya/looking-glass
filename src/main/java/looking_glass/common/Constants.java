@@ -92,7 +92,7 @@ public class Constants {
             // List of cookie names set by the response.
             { "cookie_names", "TEXT" },
             { "tool_source", "TEXT" },
-            { "server", "TEXT" },
+            // { "server", "TEXT" },
             // Should I store the value or just a field that says it exists.
             // If it's just a field that says it's there, it can be skipped for
             // "header_names"
@@ -106,9 +106,8 @@ public class Constants {
     // "http_version": How useful?
     // "Access-Control-*" headers.
 
-
     // ==================== UI Text ====================
-    
+
     // The three button labels for the DB modal.
     public static final String[] DB_MODAL_OPTIONS = {
             "Use the file", "Choose a new one", "Pause capture"

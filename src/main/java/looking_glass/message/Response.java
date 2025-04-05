@@ -39,7 +39,7 @@ public class Response {
     public boolean contentSecurityPolicy;
 
     // Some special response headers.
-    public String server;
+    // public String server;
 
     // Comma-separated header and cookie names.
     public String headerNames, cookieNames;
@@ -74,7 +74,7 @@ public class Response {
 
         this.toolSource = toolSource.toolName();
 
-        this.server = this.getHeader("Server");
+        // this.server = this.getHeader("Server");
 
         // What about other CSP headers that might be present without
         // the "Content-Security-Policy" header like "-Report-Only"?
