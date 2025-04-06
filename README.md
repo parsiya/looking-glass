@@ -11,11 +11,12 @@ Burp that don't use support this API.
 1. Add the jar file from the `release` directory as an extension in Burp.
 2. Navigate to the `Looking Glass` tab.
 3. Click the `Capture Off` button, the extension will ask you to choose a DB file.
-  1. You can also click `Select DB` to do the same.
 4. (Optional) Click `Extension Settings` and configure filters.
-5. Interact with the application normally.
+5. Interact with the application normally so Burp can see traffic.
 6. Looking Glass will store all requests/responses from all tools in the database.
-7. Query the database using SQL in the extension or use a separate program.
+7. Query the database using SQL in the extension tab.
+
+![intro](/.github/06-intro1.gif)
 
 If you want to import data from existing projects.
 
@@ -24,8 +25,6 @@ If you want to import data from existing projects.
 3. Click the `Import Proxy History` button.
 4. If you have not set a database connection, you will be asked to set one.
 5. The data will be stored in the database.
-
-![intro](/.github/06-intro1.gif)
 
 Other docs:
 

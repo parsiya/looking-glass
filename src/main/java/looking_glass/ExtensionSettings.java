@@ -1,6 +1,5 @@
 package looking_glass;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -13,7 +12,7 @@ public class ExtensionSettings {
     public boolean storeFileExtensionStatus;
     public boolean skipFileExtensionStatus;
     public boolean captureOnStartup;
-    public long bodySizeValue;
+    public int bodySizeValue;
     public String storeFileExtensions;
     public String hideFileExtensions;
     // public boolean[] mimeTypes;

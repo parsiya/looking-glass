@@ -33,9 +33,6 @@ bin/
 # do not keep Zone.Identifier files
 *Zone.Identifier
 
-# ignore the .github directory
-.github/Copilot-Instructions.md
-
 # keep the release directory and the build jar
-# ZZZ remove this for the final version.
+# TODO: Remove after creating a proper release pipeline
 !/release/*.jar

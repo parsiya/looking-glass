@@ -34,23 +34,27 @@ You can do it in two ways:
 Click on `Capture Off` to turn it to `Capture On` with a blue color. I tried to
 make it look like the `Intercept` button.
 
-The extension will register the handler that will intercept all requests and
+The extension will register a handler that will intercept all requests and
 responses regardless of the tool.
 
 ## Extension Settings
 Click on the button with the same name. Don't forget to select `Apply & Close`
-if you want to save a configuration.
+to save the configuration.
 
 Settings are stored in Burp on your machine and not in the project.
+
+![settings](/.github/10-settings.gif)
 
 ### Target Scope
 I created a table similar to Burp's `Target > Scope` settings. Use the buttons
 to add/remove domains. You can enable/disable each item individually.
 
-`www.[domain]` is a special case and always captured even if
-`Include Subdomains` is not checked.
+**`www.[domain]` is a special case and always captured even if
+`Include Subdomains` is not checked**.
 
-If there are any enabled items in the `Include` list, `Exclude` is ignored. If you have items in `Include`, but they're all disabled, the system will ignore `Include` and move to `Exclude`. 
+If there are any enabled items in the `Include` list, `Exclude` is ignored. If
+you have items in `Include`, but they're all disabled, the system will ignore
+`Include` and move to `Exclude`. 
 
 I understand you might like the edge case of including all subdomains for
 `example.net` but want to ignore a few (e.g., `secret.example.net`), but the
@@ -92,6 +96,7 @@ You can export the settings to a JSON file and edit them manually. You can also
 import settings from a JSON file. This is useful if you want to:
 
 1. Have a project specific setting.
+    1. The extension stores the settings in Burp so it can be used with the free version.
 2. Import/export the list of domains.
 3. Edit the list of extensions or the entire config in your editor.
 
@@ -100,9 +105,11 @@ this dialog.
 
 ## Import Proxy History
 This is useful if you want to import older projects. This button will import the
-entire proxy history to the database. Unfortunately, extensions cannot see the
-data in other tools (e.g., Repeater) so we cannot import data from those tools.
-The only way to capture data from other tools like Repeater, Scanner and other
-extensions is to use the HTTP Handler and capture them live.
+entire proxy history to the database. Unfortunately, Burp extensions cannot
+access data in other tools (e.g., Repeater) so we cannot import them. The only
+way to capture data from other tools like Repeater, Scanner and other extensions
+is to use the HTTP Handler and capture them live.
 
 `Import proxy history` **uses the filters set in extension settings**.
+
+![import proxy history](/.github/09-import-history.gif)

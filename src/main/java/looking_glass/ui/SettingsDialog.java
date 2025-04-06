@@ -293,9 +293,14 @@ public class SettingsDialog extends JDialog {
         applyBtn.setForeground(Color.WHITE);
         applyBtn.setFont(applyBtn.getFont().deriveFont(Font.BOLD));
         applyBtn.addActionListener(e -> {
-            // Save the settings and close the form.
+            try {
+                // Save the settings and close the form.
             this.saveSettings();
             this.dispose();
+            } catch (Exception ex) {
+                Utils.msgBox("Error", "Error saving settings: " + ex.getMessage());
+                Log.toError("Error saving settings: " + ex.getMessage());
+            }
         });
 
         // Add buttons to the save panel
@@ -411,7 +416,7 @@ public class SettingsDialog extends JDialog {
 
         // Try to convert the size value to an integer.
         settings.bodySizeStatus = this.sizeCheckBox.isSelected();
-        settings.bodySizeValue = (Long) this.sizeTextField.getValue();
+        settings.bodySizeValue = (Integer) this.sizeTextField.getValue();
         settings.captureOnStartup = this.captureOnStartup.isSelected();
 
         // Store it in the handler. This will also update the filter and store
