@@ -3,7 +3,7 @@ Looking Glass is a Burp extension that stores all requests/responses in a
 database. You can query this data to discover endpoints, data, and anything you
 might have missed.
 
-The extension uses the Montoya APIs. It's incompatible with older versions of
+The extension uses Burp's Montoya APIs. It's incompatible with older versions of
 Burp that don't use support this API.
 
 ## Quick Start
@@ -25,6 +25,8 @@ If you want to import data from existing projects.
 4. If you have not set a database connection, you will be asked to set one.
 5. The data will be stored in the database.
 
+![intro](/.github/06-intro1.gif)
+
 Other docs:
 
 * [docs/database.md][db]: Explains the database schema and columns.
@@ -36,10 +38,10 @@ Other docs:
 [settings]: /docs/settings.md
 
 **Privacy Warning**: The value of parameters, headers and cookies are stored in
-the local file. This includes passwords and tokens. While this sounds scary, the
-same information is stored in Burp project files, so keep them all safe. I have
-a feature planned that allows the user to block storage of sensitive values. See
-[issue #8][i8].
+the local database file. This includes passwords and tokens. While this sounds
+scary, the same information is stored in Burp project files. I have a feature
+planned that allows the user to block storage of sensitive values. See [issue
+#8][i8].
 
 [i8]: https://github.com/parsiya/looking-glass/issues/8
 
@@ -48,7 +50,7 @@ Looking Glass uses a local SQLite database to store the data. You don't need to
 install extra drivers or setup a server.
 
 At a high-level, you can select your database, include/exclude (sub)domains and
-skip storing the body of requests over a certain size or with specific
+ignore the body of requests/responses over a certain size or specific
 extensions.
 
 For more detailed configuration please see [docs/settings.md][settings].
@@ -64,20 +66,20 @@ times, it will be logged 10 times.
 [httphandler]: https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/http/handler/HttpHandler.html
 
 ## Queries
-Just logging data is not useful. The utility of the extension is in mining them
-for insights.
+You can log all day and not be wiser. Knowledge comes from mining the data (lol).
 
 Queries are SQL and we have two tables: `requests` and `responses`. The value of
 the `request_id` column for each response points to the `requests` table.
 
 The extension comes with some built-in queries to get you started. You can also
-import/export queries from/to JSON. Here are a few examples. See the database
-structure at [docs/database.md][db] and more queries at
+import/export queries from/to JSON. 
+
+See the database structure at [docs/database.md][db] and more queries at
 [docs/queries.md][queries]. If you have any suggestions for queries, please
 create an issue or a pull request.
 
-The comment is the name of the query in the built-in set of queries. You're
-welcome to trim them for your own usage.
+The comment on top of each query is the name of the query in the built-in set.
+You're welcome to trim them for your own usage.
 
 ### List Paths for a Host
 You want to see all the paths for a host. This is usually used to create a list
@@ -85,9 +87,11 @@ to pass to a different tool.
 
 ```sql
 -- Paths for a Host
-SELECT distinct path FROM requests
+SELECT DISTINCT path FROM requests
 WHERE host LIKE "%ea.com%"
 ```
+
+![paths for ea.com](/.github/07-paths.jpg)
 
 ### Requests with a Specific Parameter Name
 The `parameter_names` contains a comma separated list of all parameter names in
@@ -97,7 +101,7 @@ released that affects all parameters named `update`.
 
 ```sql
 -- Search Parameter Name
-SELECT url FROM requests
+SELECT DISTINCT url FROM requests
 WHERE parameter_names LIKE "%update%"
 ```
 
@@ -105,7 +109,7 @@ We can combine it with the HTTP method (or verb if you prefer).
 
 ```sql
 -- Search Parameter Name and Method
-SELECT url FROM requests
+SELECT DISTINCT url FROM requests
 WHERE parameter_names LIKE "%update%"
 AND method == "POST"
 ```
@@ -130,6 +134,8 @@ SELECT distinct url, method FROM requests
 WHERE header_names LIKE "%authorization%"
 ```
 
+![authorization header](/.github/08-authorization.jpg)
+
 ### HTTP Requests
 Burp provides an `ishttps` field for each request and it's stored in the
 `is_https` column in the database. The value is `1` if true and `0` if not.
@@ -150,22 +156,25 @@ Why did I create this and why didn't I use an existing tool?
 It all started a few years ago from a Twitter thread where some bug bounty
 hunters were talking about storing requests/responses in (elasticsearch? I
 think) databases. After leaving the game hacking world and going back to
-(mostly) web/cloud (RIP skillz), I realized I need to create such an extension.
+(mostly) web/cloud (RIP skillz), I realized I needed such an extension.
 
-I wanted to fix the gap between "searching in each Burp project manually" and
-"setting up servers in the cloud" so folks can get started without paying for
+I want to fix the gap between "searching in each Burp project manually" and
+"setting up servers in the cloud". Now folks can get started without paying for
 cloud.
 
-While you can get many of this information from Burp using Bambdas (or other
-places like the sitemap), you cannot bulk search in hundreds of Burp projects.
-This tool gives us the ability to discover points of interests across all of our
-tests even when they've happened in the past.
+While you can get many of this information from individual projects in Burp
+using Bambdas (or other places like the sitemap), you cannot bulk search in
+hundreds of Burp projects. This database gives us the ability to discover points
+of interests across all of our tests even when they've happened in the past.
+
+Because we're using a SQLite database, you are not limited to the extension. You
+can use any software or program to do this. E.g., importing it to Kusto so you
+can query them in the cloud (and also because I like KQL more than SQL).
 
 ### Similar Tools
-I found a few other extensions that logged Burp requests/responses. Now you
-might say, why create your own? Well, because none of them did exactly what I
-wanted. I wanted to to query individual fields (e.g., `host`) in an
-easy-to-setup local database.
+I found a few other extensions that logged Burp requests/responses. Why create
+my own? None of them did exactly what I wanted. I wanted to to query individual
+fields (e.g., `host`) in a setup-free local database.
 
 **[Logger++][logger-plus]** by [Corey Arthur][corey] and [Soroush Dalili][irsdl]
 (hey, I know some of them) is one of the most famous Burp extensions.
@@ -195,7 +204,7 @@ specific header.
 [dump]: https://blog.stratumsecurity.com/2017/08/01/dump-a-burp-plugin-to-dump-http-s-requests-responses-to-a-file-system/
 [dump-gh]: https://github.com/crashgrindrips/burp-dump
 
-[SQLite logger for Burp Suite][sql-logger] is a Java Burp extension by Andras
+**[SQLite logger for Burp Suite][sql-logger]** is a Java Burp extension by Andras
 Veres-Szentkiralyi that also logs requests/responses to a SQLite database.
 
 [sql-logger]: https://github.com/silentsignal/burp-sqlite-logger
