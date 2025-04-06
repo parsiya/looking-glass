@@ -11,38 +11,47 @@ Burp that don't use support this API.
 1. Add the jar file from the `release` directory as an extension in Burp.
 2. Navigate to the `Looking Glass` tab.
 3. Click the `Capture Off` button, the extension will ask you to choose a DB file.
-    1. You can also click `Select DB` to do the same.
+  1. You can also click `Select DB` to do the same.
 4. (Optional) Click `Extension Settings` and configure filters.
 5. Interact with the application normally.
 6. Looking Glass will store all requests/responses from all tools in the database.
 7. Query the database using SQL in the extension or use a separate program.
 
-If you want to import data from older projects.
+If you want to import data from existing projects.
 
-1. Navigate to the `Looking Glass` tab.
-2. Click the `Import Proxy History` button.
-3. If you have not set a database connection, you will be asked to set one.
-4. The data will be stored in the database.
+1. Open the project.
+2. Navigate to the `Looking Glass` tab.
+3. Click the `Import Proxy History` button.
+4. If you have not set a database connection, you will be asked to set one.
+5. The data will be stored in the database.
+
+Other docs:
+
+* [docs/database.md][db]: Explains the database schema and columns.
+* [docs/queries.md][queries]: Sample queries for possible use cases.
+* [docs/settings.md][settings]: Extension settings.
+
+[db]: /docs/database.md
+[queries]: /docs/queries.md
+[settings]: /docs/settings.md
 
 **Privacy Warning**: The value of parameters, headers and cookies are stored in
-the database. This includes passwords and tokens. While this sounds scary, the
-same information is stored in Burp project files, so keep them all safe.
-
-I have a feature planned that allows the user to block storage of values (except
-some that are not sensitive but useful) in the database. See [issue #8][i8].
+the local file. This includes passwords and tokens. While this sounds scary, the
+same information is stored in Burp project files, so keep them all safe. I have
+a feature planned that allows the user to block storage of sensitive values. See
+[issue #8][i8].
 
 [i8]: https://github.com/parsiya/looking-glass/issues/8
 
 ## Extension Settings
 Looking Glass uses a local SQLite database to store the data. You don't need to
-install extra drivers or setup a server. Everything is local.
+install extra drivers or setup a server.
 
 At a high-level, you can select your database, include/exclude (sub)domains and
 skip storing the body of requests over a certain size or with specific
 extensions.
 
-For more detailed configuration please see
-[docs/settings.md](docs/settings.md).
+For more detailed configuration please see [docs/settings.md][settings].
 
 ## What is Captured?
 If you turn on capture, the extension registers a [HTTP Handler][httphandler]
@@ -63,22 +72,12 @@ the `request_id` column for each response points to the `requests` table.
 
 The extension comes with some built-in queries to get you started. You can also
 import/export queries from/to JSON. Here are a few examples. See the database
-structure at [docs/database.md](docs/database.md) and more queries at
-[docs/queries.md](docs/queries.md). If you have any suggestions for queries,
-please create an issue or a pull request.
+structure at [docs/database.md][db] and more queries at
+[docs/queries.md][queries]. If you have any suggestions for queries, please
+create an issue or a pull request.
 
 The comment is the name of the query in the built-in set of queries. You're
 welcome to trim them for your own usage.
-
-### HTTP Requests
-Burp provides an `ishttps` field for each request and it's stored in the
-`is_https` column in the database. The value is `1` if true and `0` if not.
-
-```sql
--- Http Requests
-SELECT distinct url FROM requests
-WHERE is_https == 0
-```
 
 ### List Paths for a Host
 You want to see all the paths for a host. This is usually used to create a list
@@ -105,6 +104,7 @@ WHERE parameter_names LIKE "%update%"
 We can combine it with the HTTP method (or verb if you prefer).
 
 ```sql
+-- Search Parameter Name and Method
 SELECT url FROM requests
 WHERE parameter_names LIKE "%update%"
 AND method == "POST"
@@ -130,7 +130,15 @@ SELECT distinct url, method FROM requests
 WHERE header_names LIKE "%authorization%"
 ```
 
-As mentioned above. See [docs/queries.md](docs/queries.md) for more.
+### HTTP Requests
+Burp provides an `ishttps` field for each request and it's stored in the
+`is_https` column in the database. The value is `1` if true and `0` if not.
+
+```sql
+-- Insecure HTTP Requests
+SELECT distinct url FROM requests
+WHERE is_https == 0
+```
 
 ## Development
 See [DEVELOPMENT.md](DEVELOPMENT.md).

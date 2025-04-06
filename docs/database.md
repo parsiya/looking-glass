@@ -12,6 +12,7 @@ For `GET https://example.net/foo/bar?param1=val1&param2=val2`.
 
 | Header Names    | Notes                                                                     |
 | --------------- | ------------------------------------------------------------------------- |
+| request_id      | Unique ID of the request in the table.                                    |
 | url             | Complete URL with query string: `https://example.net/foo/bar?param1=...`. |
 | method          | HTTP Method/Verb in UPPERCASE. E.g., GET/POST.                            |
 | path            | Path including query strings: `/foo/bar?param1=val1&param2=val2`.         |
@@ -36,6 +37,8 @@ The other table is very similar:
 
 | Name                    | Notes                                                                       |
 | ----------------------- | --------------------------------------------------------------------------- |
+| response_id             | Unique ID of the response in the table.                                     |
+| request_id              | ID of the request that initiated this response in the `requests` table.     |
 | status_code             | Status code as a number. E.g., `200`.                                       |
 | reason_phrase           | Short description of status code. E.g., `OK` for `200`.                     |
 | content_type            | Value of `Content-Type` header.                                             |

@@ -24,7 +24,7 @@ public class DB {
 
     // Connect to a SQLite database. The DB file will be created if the file
     // doesn't exist.
-    public static Connection connect(String path) throws SQLException, ClassNotFoundException {
+    public static Connection connect(String path) throws Exception {
         String url = Constants.SQLITE_JDBC_PREFIX + path;
         // Is this thing on? Checks if the class is available.
         Class.forName("org.sqlite.JDBC");
@@ -39,8 +39,9 @@ public class DB {
         String reqTable = generateCreateTableQuery(Constants.CREATE_REQUEST_TABLE, Constants.REQUEST_FIELDS);
         String resTable = generateCreateTableQuery(Constants.CREATE_RESPONSE_TABLE, Constants.RESPONSE_FIELDS);
 
-        // Populate the insert queries. This method usually called once or twice
-        // per database so it's much better than creating them for each use.
+        // Populate the insert queries. This method is usually called once or
+        // twice per database so it's much better than creating them for each
+        // use.
         DB.insertRequest = generateInsertQuery(Constants.INSERT_REQUEST, Constants.REQUEST_FIELDS);
         DB.insertResponse = generateInsertQuery(Constants.INSERT_RESPONSE, Constants.RESPONSE_FIELDS);
 
@@ -48,8 +49,27 @@ public class DB {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(reqTable);
             stmt.execute(resTable);
+
+            // Read /src/resources/views.sql to get the views.
+            String views = Utils.readResourceFile("/views.sql");
+            // Split by `;` which works for now because the views only have `;`
+            // in the end. But might become problematic if we add complex views
+            // in the future.
+            String[] statements = views.split(";");
+
+            for (String statement : statements) {
+                statement = statement.trim();
+                if (!statement.isEmpty()) {
+                    // Add the statements to the batch.
+                    stmt.addBatch(statement);
+                }
+            }
+            // Add all the views.
+            stmt.executeBatch();
         } catch (Exception e) {
             // Close the connection if something goes bad.
+            // We do not want to do it in the finally block because we want to
+            // close the connection only if we have an error.
             connection.close();
             throw e;
         }
@@ -70,7 +90,8 @@ public class DB {
         return String.format(queryTemplate, fieldDefinitions);
     }
 
-    // Adds the fields to the INSERT query.
+    // Adds the fields to the INSERT query. This is just text processing. The
+    // query is not executed here.
     private static String generateInsertQuery(String queryTemplate, String[][] fields) {
         // Adds the field names to the first placeholder inside
         // `INSERT INTO request (%s)`.

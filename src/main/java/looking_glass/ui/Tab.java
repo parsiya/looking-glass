@@ -15,10 +15,8 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import burp.api.montoya.core.ToolType;
-import burp.api.montoya.http.handler.ResponseReceivedAction;
 import burp.api.montoya.http.message.requests.HttpRequest;
 import burp.api.montoya.http.message.responses.HttpResponse;
 import burp.api.montoya.proxy.Proxy;
@@ -444,9 +442,9 @@ public class Tab extends JSplitPane {
             // Get the selected file.
             File selectedFile = fileChooser.getSelectedFile();
             // Read the JSON from the file.
-            String json = "";
+            String queriesString = "";
             try {
-                json = Files.readString(selectedFile.toPath());
+                queriesString = Files.readString(selectedFile.toPath());
             } catch (Exception e) {
                 Utils.msgBox("Error", "Error reading queries: " + e.getMessage());
                 return;
@@ -454,9 +452,12 @@ public class Tab extends JSplitPane {
             // Convert the JSON to a list of queries.
             List<Query> queries = new ArrayList<>();
             try {
-                Type type = new TypeToken<List<Query>>() {
+                Type queriesType = new TypeToken<List<Query>>() {
                 }.getType();
-                queries = Utils.fromJson(json, type);
+                queries = Utils.fromJson(queriesString, queriesType);
+                if (queries == null || queries.isEmpty()) {
+                    throw new Exception("No queries found in the file.");
+                }
                 // Set the queries in the sidebar.
                 this.sidebar.setQueries(queries);
             } catch (Exception e) {

@@ -62,15 +62,6 @@ public class Sidebar extends JScrollPane {
         newQueryItem.addActionListener(e -> this.newQuery());
         popupMenu.add(newQueryItem);
 
-        // ==================== Delete Query =====================
-
-        JMenuItem deleteQueryItem = new JMenuItem("Delete Query");
-        deleteQueryItem.setEnabled(false);
-        popupMenu.add(deleteQueryItem);
-        deleteQueryItem.addActionListener(e -> {
-            this.deleteQuery();
-        });
-
         // ==================== Rename Query =====================
         JMenuItem editQueryItem = new JMenuItem("Rename Query");
         editQueryItem.setEnabled(false);
@@ -86,6 +77,15 @@ public class Sidebar extends JScrollPane {
             }
         });
 
+        // ==================== Delete Query =====================
+
+        JMenuItem deleteQueryItem = new JMenuItem("Delete Query");
+        deleteQueryItem.setEnabled(false);
+        popupMenu.add(deleteQueryItem);
+        deleteQueryItem.addActionListener(e -> {
+            this.deleteQuery();
+        });
+
         // Add the popup menu to the JList.
         this.queryList.setComponentPopupMenu(popupMenu);
 
@@ -98,10 +98,10 @@ public class Sidebar extends JScrollPane {
                 Query selectedQuery = this.queryList.getSelectedValue();
                 if (selectedQuery != null) {
                     this.queryDetailsArea.setText(selectedQuery.text);
-                    deleteQueryItem.setEnabled(true); // Enable Delete Query
+                    deleteQueryItem.setEnabled(true); // Enable `Delete Query`
                 } else {
                     this.queryDetailsArea.setText("");
-                    deleteQueryItem.setEnabled(false); // Disable Delete Query
+                    deleteQueryItem.setEnabled(false); // Disable `Delete Query`
                 }
             }
         });
@@ -114,7 +114,7 @@ public class Sidebar extends JScrollPane {
                     editQuery();
                 }
                 // Detect middle-click.
-                if (e.getButton() == MouseEvent.BUTTON2) { // Check for middle-click
+                if (e.getButton() == MouseEvent.BUTTON2) {
                     int index = queryList.locationToIndex(e.getPoint());
                     if (index != -1 && queryList.getCellBounds(index, index).contains(e.getPoint())) {
                         queryList.setSelectedIndex(index); // Ensure the item is selected

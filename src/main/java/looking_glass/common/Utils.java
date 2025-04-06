@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 import javax.swing.JOptionPane;
 
@@ -96,6 +98,15 @@ public class Utils {
         setKey(Constants.DB_PATH_KEY, dbPath);
     }
 
+    // Return the stored queries from the extension's settings.
+    public static String getQueries() {
+        return getKey(Constants.QUERIES_KEY);
+    }
+    // Set the stored queries in the extension's settings.
+    public static void setQueries(String queries) {
+        setKey(Constants.QUERIES_KEY, queries);
+    }
+
     // ==================== Capture Utilities ====================
 
     // Returns true if the capture status is "active."
@@ -130,7 +141,7 @@ public class Utils {
             // If the database connection is not established, show the DB modal.
             if (httpHandler.getConnection() == null) {
                 // Detect if we're running in the extension or in the startup.
-                if (startup){
+                if (startup) {
                     // If we're running in the startup, don't show the DB modal.
                     DBModal.showStartup();
                 } else {
@@ -208,6 +219,13 @@ public class Utils {
             component.setBackground(new Color(76, 80, 82));
         } else {
             component.setBackground(Color.white);
+        }
+    }
+
+    // Read a file from /src/main/resources/ and return it as a string.
+    public static String readResourceFile(String fileName) throws Exception {
+        try (InputStream inputStream = Utils.class.getResourceAsStream(fileName)) {
+            return new String(inputStream.readAllBytes());
         }
     }
 }

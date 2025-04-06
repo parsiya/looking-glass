@@ -1,0 +1,90 @@
+[
+  {
+    "title": "Paths for a Host",
+    "text": "SELECT distinct path FROM requests\nWHERE host LIKE \"%ea.com%\""
+  },
+  {
+    "title": "Search Parameter Name",
+    "text": "SELECT distinct path FROM requests\nWHERE host LIKE \"%ea.com%\""
+  },
+  {
+    "title": "Search Parameter Name and Method",
+    "text": "SELECT url FROM requests\nWHERE parameter_names LIKE \"%update%\"\nAND method == \"POST\""
+  },
+  {
+    "title": "JSON Payloads",
+    "text": "SELECT url, method FROM requests\nWHERE content_type LIKE \"%json%\""
+  },
+  {
+    "title": "Authorization Header",
+    "text": "SELECT distinct url, method FROM requests\nWHERE header_names LIKE \"%authorization%\""
+  },
+  {
+    "title": "Insecure HTTP Requests",
+    "text": "SELECT distinct url FROM requests\nWHERE is_https == 0"
+  },
+  {
+    "title": "Repeater Requests",
+    "text": "SELECT \n  req.request_id,\n  req.url,\n  req.method,\n  res.status_code\nFROM requests req\nJOIN responses res ON req.request_id = res.request_id\nWHERE req.tool_source = 'Repeater'"
+  },
+  {
+    "title": "Request bodies",
+    "text": "SELECT * FROM request_bodies"
+  },
+  {
+    "title": "Response bodies",
+    "text": "SELECT * FROM response_bodies"
+  },
+  {
+    "title": "All bodies",
+    "text": "SELECT * FROM all_bodies"
+  },
+  {
+    "title": "All JavaScript Files",
+    "text": "SELECT * FROM javascript_files"
+  },
+  {
+    "title": "Everything",
+    "text": "select * from everything"
+  },
+  {
+    "title": "Azure response headers",
+    "text": "select * from azure_response_headers"
+  },
+  {
+    "title": "Activity within Duration",
+    "text": "SELECT r.url\nFROM requests r\nJOIN responses res\nON r.request_id = res.request_id\nWHERE datetime(Date / 1000, 'unixepoch')\nBETWEEN '2025-03-01 10:00:00' AND '2025-04-01 20:00:00'"
+  },
+  {
+    "title": "Filter by Referer",
+    "text": "SELECT req.url, req.referer\nFROM requests req\nWHERE req.referer == \"https://www.microsoft.com/\""
+  },
+  {
+    "title": "Filter by User-Agent",
+    "text": "WITH extracted_user_agent AS (\n  SELECT \n    (SELECT json_extract(value, '$.value') \n     FROM json_each(data, '$.headers') \n     WHERE json_extract(value, '$.name') = 'User-Agent') AS user_agent,\n    url\n  FROM requests\n  WHERE user_agent LIKE \"%mozilla%\"\n)\nSELECT \n  user_agent,\n  url\nFROM extracted_user_agent;"
+  },
+  {
+    "title": "Server, x-powered-by",
+    "text": "SELECT * FROM server_headers"
+  },
+  {
+    "title": "X-Forwarded- Headers",
+    "text": "SELECT * FROM x_forwarded_headers"
+  },
+  {
+    "title": "Responses with CSP",
+    "text": "SELECT * FROM responses_with_csp"
+  },
+  {
+    "title": "Access-Control Headers",
+    "text": "SELECT * FROM responses_with_cors_headers"
+  },
+  {
+    "title": "Filter requests by cookie",
+    "text": "SELECT DISTINCT\n  req.url\nFROM requests req\nWHERE req.cookie_names LIKE '%cookie_name%';"
+  },
+  {
+    "title": "Filter responses by cookie",
+    "text": "SELECT DISTINCT \n  req.url,\n  json_extract(h.value, '$.value') AS cookie_value\nFROM responses res\nJOIN requests req ON res.request_id = req.request_id\nJOIN json_each(res.data, '$.headers') h\nWHERE json_extract(h.value, '$.name') = 'Set-Cookie'\nAND json_extract(h.value, '$.value') LIKE '%cookie_name%';"
+  }
+]

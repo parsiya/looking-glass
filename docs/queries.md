@@ -3,27 +3,108 @@ I learned a lot from writing the extension, but the actual utility is in the
 queries. Knowing the structure of the [database](/docs/database.md) and some
 SQL (or asking LLMs) you can ask for almost any info that you want.
 
+## How to Use Queries
+Queries are in SQL. Simply write your query in the panel and press `Run`. Any
+results or errors will be in the bottom panel.
+
+### Create New Queries
+To add a new query, right-click anywhere on the list and select `New Query`. The
+prompt will ask you for a name. The extension doesn't enforce unique naming but
+it also doesn't overwrite queries with existing names.
+
+![Sidebar menu](/.github/05-sidebar-menu.png)
+
+### Save/Modify Queries
+The initial value of the query is the contents in the query panel. After
+changing, click the `Save` button to save the value to the currently selected
+query. If you do not have any queries and press `Save`, you will see the
+`New Query` prompt and can enter a name to create a new query.
+
+**If you change a query and then select a new one without saving, the changes
+will be lost**. See [issue #13][i13].
+
+[i13]: https://github.com/parsiya/looking-glass/issues/13
+
+### Rename Queries
+Right-click a query and select `Rename Query` or double left-click it. You will
+get a prompt to enter the new name.
+
+### Delete Queries
+Right-click a query and select `Delete Query` or middle-click it with your
+mouse, then accept the confirmation prompt.
+
+## Views
+The database has some built-in views for popular queries. You can see them in
+the [/src/main/resources/views.sql](/src/main/resources/views.sql) file. If you
+have any suggestions for views, please make an issue or a PR.
+
+My preference is adding a view and then using the view in the query. This
+simplifies the queries.
+
+You can add your own views by pasting them in the query box and clicking `Run`.
+You will get this error which you can ignore because that button expects a query
+with results: `Error running the query: query does not return ResultSet`.
+
+## Sample Queries
 Here are some examples that have been useful for me. I have also included these
-in the built-in queries (that you're welcome to trim for your own use). If you
-can think of any useful queries, please make an issue or a PR.
+in the built-in queries (that you're welcome to trim for your own use). The
+comments are the name of the queries in the set.
 
-The comments are the name of the queries in the built-in set.
+### Filter by a Specific Tool
+We can filter by the  `tool_source` in both request and response. E.g., all
+requests from `Repeater`. This useful if we're asked for manual requests.
 
-## All Request and Response Bodies
+```sql
+-- Repeater Requests
+SELECT 
+  req.request_id,
+  req.url,
+  req.method,
+  res.status_code
+FROM requests req
+JOIN responses res ON req.request_id = res.request_id
+WHERE req.tool_source = 'Repeater'
+```
+
+Change the string for other tools like `Scanner` and `Proxy`.
+
+### All Request and Response Bodies
 Here's a query to extract all request/response bodies that are not null.
 
 ```sql
--- All request bodies
--- All response bodies
+SELECT JSON_EXTRACT(data, '$.body') AS body
+FROM requests
+WHERE JSON_EXTRACT(data, '$.body') != '';
+
 SELECT JSON_EXTRACT(data, '$.body') AS body
 FROM responses -- replace with responses
-WHERE JSON_EXTRACT(data, '$.body') != "";
+WHERE JSON_EXTRACT(data, '$.body') != '';
 ```
 
-## All the JavaScript Files
+Or we can use the built-in views:
+
+```sql
+-- Request bodies
+SELECT * FROM request_bodies
+
+-- Response bodies
+SELECT * FROM response_bodies
+
+-- All bodies
+SELECT * FROM all_bodies
+```
+
+### List JavaScript Files
 Note, the default settings of the extension doesn't store the body of the
 JavaScript files, but the request and response are logged. Creating such a list
 is useful when you want to pass it to another tool to download/or analyze them.
+
+Using the built-in view:
+
+```sql
+-- All JavaScript Files
+SELECT * FROM javascript_files
+```
 
 There are multiple ways of doing this and I suggest you use them all to catch
 all the edge cases.
@@ -31,9 +112,8 @@ all the edge cases.
 Use the file extension in the URL:
 
 ```sql
--- All JavaScript Files-1
 SELECT url FROM requests
-WHERE url LIKE "%.js"
+WHERE url LIKE '%.js'
 ```
 
 The `responses` table also has two columns:
@@ -42,7 +122,6 @@ The `responses` table also has two columns:
 2. `inferred_content_type` is done by Burp and only has a few values.
 
 ```sql
--- All JavaScript Files-2
 SELECT r.url
 FROM requests r
 JOIN responses res
@@ -51,18 +130,29 @@ WHERE res.inferred_content_type = 'SCRIPT'
 OR res.content_type LIKE '%javascript%';
 ```
 
-## Everything in the Table
-If you want to see everything and also pair request and responses together.
+If we merge these two and create a view, we get the view we used above:
+
+```sql
+CREATE VIEW javascript_files AS
+SELECT req.url
+FROM requests req
+LEFT JOIN responses res
+ON req.request_id = res.request_id
+WHERE req.url LIKE '%.js'
+OR res.inferred_content_type = 'SCRIPT'
+OR res.content_type LIKE '%javascript%';
+```
+
+### Everything in the Database
+If you want to see everything and also pair request and responses together, use
+the built-in view.
 
 ```sql
 -- Everything
-SELECT r.*, res.*
-FROM requests r
-JOIN responses res
-ON r.request_id = res.request_id
+select * from everything
 ```
 
-## Azure Response Headers
+### Azure Response Headers
 Some Azure responses have specific headers. E.g., [correlation vectors][cv] like
 `ms-cv`, `ms-csv`, or `ms-correlationid`.
 
@@ -71,10 +161,16 @@ Some Azure responses have specific headers. E.g., [correlation vectors][cv] like
 ```sql
 -- Azure response headers
 SELECT distinct url
-FROM requests r
+FROM requests req
 JOIN responses res
-ON r.request_id = res.request_id
+ON req.request_id = res.request_id
 WHERE res.header_names  LIKE "%ms-cv%" OR res.header_names LIKE "%ms-correlationid%"
+```
+
+Or using the built-in view based on the query above:
+
+```sql
+select * from azure_response_headers
 ```
 
 ### Activity within a Certain Duration
@@ -96,20 +192,20 @@ WHERE datetime(Date / 1000, 'unixepoch')
 BETWEEN '2025-03-01 10:00:00' AND '2025-04-01 20:00:00'
 ```
 
-## Filter by Referer
+### Filter by Referer
 Sometimes it's useful to see all requests that have originated from a specific
 page.
 
 ```sql
 -- Filter by Referer
-SELECT r.url, r.referer
-FROM requests r
-WHERE r.referer == "https://www.microsoft.com/"
+SELECT req.url, req.referer
+FROM requests req
+WHERE req.referer == "https://www.microsoft.com/"
 ```
 
-## Filter by User-Agent
-If you're proxying thickclients, you can differentiate in traffic with user
-agents.
+### Filter by User-Agent
+If you're proxying thick clients, you can differentiate the traffic from
+different programs with user agents.
 
 ```sql
 -- Filter by User-Agent
@@ -128,29 +224,81 @@ SELECT
 FROM extracted_user_agent;
 ```
 
-## Server Response Header
-The `Server` response header is not always set
-Find out server types and versions if available.
+## Server Information
+The `Server` and `X-Powered-By` response headers are not always set, but might
+contain information. We can extract them from response JSON.
 
-`X-Powered-By` is similar and can be used to find info about the server.
+Using the build-in view:
 
-
-### Sec-whatever Headers
-Figure out which ones are populated if the action was a user action and what the
-value is. Credit where you learned from, another student in the Burp course.
-
+```sql
+-- Server, x-powered-by
+SELECT * FROM server_headers
 ```
-Sec-Fetch-Dest
-Sec-Fetch-Mode
-Sec-Fetch-Site
-Sec-Fetch-User
+
+Or you can run the query manually and add any other headers you're looking for:
+
+```sql
+WITH extracted_headers AS (
+  SELECT 
+    r.url,
+    (SELECT json_extract(value, '$.value') 
+     FROM json_each(res.data, '$.headers') 
+     WHERE json_extract(value, '$.name') = 'Server') AS server_header,
+    (SELECT json_extract(value, '$.value') 
+     FROM json_each(res.data, '$.headers') 
+     WHERE json_extract(value, '$.name') = 'X-Powered-By') AS x_powered_by_header
+  FROM responses res
+  JOIN requests r ON r.request_id == res.request_id
+  WHERE res.header_names LIKE '%Server%' OR res.header_names LIKE '%X-Powered-By%'
+)
+SELECT DISTINCT
+  url, 
+  server_header, 
+  x_powered_by_header
+FROM extracted_headers;
 ```
 
 ### X-Forwarded- Headers
-We can find those and see where we can mess with proxy servers.
+We can find those and see where we can mess with proxy servers. Let's select
+every URL that has a header that has a `X-Forwarded-*` header.
+
+```sql
+-- X-Forwarded- Headers
+SELECT 
+  req.url,
+  json_extract(headers.value, '$.name') AS header_name,
+  json_extract(headers.value, '$.value') AS header_value
+FROM responses res
+JOIN requests req ON req.request_id = res.request_id
+JOIN json_each(res.data, '$.headers') headers
+WHERE json_extract(headers.value, '$.name') LIKE 'X-Forwarded-%'
+```
+
+Or use views:
+
+```sql
+-- x-forwarded headers
+SELECT * FROM x_forwarded_headers
+```
+
+### Content-Security-Policy
+The response table has a `content_security_policy` header that is `1` if the
+response has one.
+
+```sql
+SELECT DISTINCT req.url
+FROM responses res
+JOIN requests req ON req.request_id = res.request_id
+WHERE res.content_security_policy = 1;
+```
+
+```sql
+-- Responses with CSP
+SELECT * FROM responses_with_csp
+```
 
 ### Access-Control- Headers
-Useful for tagging CORS issue investigations.
+Useful for tagging CORS issue investigations. We will check for these headers:
 
 ```
 Access-Control-Allow-Credentials
@@ -163,18 +311,78 @@ Access-Control-Request-Headers
 Access-Control-Request-Method
 ```
 
+```sql
+SELECT DISTINCT 
+  req.url,
+  json_extract(h.value, '$.name') AS header_name,
+  json_extract(h.value, '$.value') AS header_value
+FROM responses res
+JOIN requests req ON res.request_id = req.request_id
+JOIN json_each(res.data, '$.headers') h
+WHERE json_extract(h.value, '$.name') IN (
+  'Access-Control-Allow-Credentials',
+  'Access-Control-Allow-Headers',
+  'Access-Control-Allow-Methods',
+  'Access-Control-Allow-Origin',
+  'Access-Control-Expose-Headers',
+  'Access-Control-Max-Age',
+  'Access-Control-Request-Headers',
+  'Access-Control-Request-Method'
+);
+```
 
+We also have a built-in view:
 
-### Content-Security-Policy
-If it exists and extract the value.
+```sql
+-- Access-Control Headers
+SELECT * FROM responses_with_cors_headers
+```
 
-### Cookies
-Cookie names in the request.
+![CORS headers](/.github/04-cors.png)
 
-Cookie names in the response and their domains/paths. E.g., what domain cookies are we getting?
+### Request Cookies
+What requests have a certain cookie.
 
-## More Complex
+```sql
+-- Filter requests by cookie
+SELECT DISTINCT
+  req.url
+FROM requests req
+WHERE req.cookie_names LIKE '%cookie_name%';
+```
 
-### OpenAPI
-Need processing on the client. Show a picture of the mapping from HTTP
-request/response to OpenAPI.
+We can use a similar query to discover where this cookie is set:
+
+```sql
+SELECT DISTINCT
+  req.url
+FROM responses res
+JOIN requests req ON res.request_id = req.request_id
+WHERE res.cookie_names LIKE '%cookie_name%';
+```
+
+Also return the value of the cookie that was set.
+
+```sql
+-- Filter responses by cookie
+SELECT DISTINCT 
+  req.url,
+  json_extract(h.value, '$.value') AS cookie_value
+FROM responses res
+JOIN requests req ON res.request_id = req.request_id
+JOIN json_each(res.data, '$.headers') h
+WHERE json_extract(h.value, '$.name') = 'Set-Cookie'
+AND json_extract(h.value, '$.value') LIKE '%cookie_name%';
+```
+
+### All Views
+We can even show all the views we have created.
+
+```sql
+SELECT name, sql 
+FROM sqlite_master 
+WHERE type = 'view';
+```
+
+I've already paid for you to create as many queries as you can, they're free.
+Sky's the limit!

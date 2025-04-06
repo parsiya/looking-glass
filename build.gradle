@@ -16,6 +16,15 @@ dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.49.0.0'
 }
 
+sourceSets {
+    main {
+        resources {
+            // Include the SQL queries in resources.
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
 jar {
     duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
     from {

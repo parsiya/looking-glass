@@ -14,7 +14,6 @@ import burp.api.montoya.core.Registration;
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.handler.*;
 
-import looking_glass.common.Constants;
 import looking_glass.common.Log;
 import looking_glass.common.Utils;
 import looking_glass.db.DB;
@@ -115,7 +114,7 @@ public class Handler implements HttpHandler {
     public Filter getFilter() {
         return this.filter;
     }
-   
+
     // Save queries to the extension config.
     public void saveQueries() {
         // Convert DefaultListModel to a List<Query>
@@ -129,32 +128,48 @@ public class Handler implements HttpHandler {
         try {
             // Type listType = new TypeToken<List<Query>>() {}.getType();
             String qString = Utils.toJson(q);
-            Utils.setKey(Constants.QUERIES_KEY, qString);
+            Utils.setQueries(qString);
         } catch (Exception e) {
             Log.toError("Couldn't convert queries to JSON: " + e.getMessage());
-            Utils.setKey(Constants.QUERIES_KEY, "");
         }
     }
 
     // Load queries from the extension config.
     public void loadQueries() {
         this.queries = new DefaultListModel<Query>();
-        String qString = Utils.getKey(Constants.QUERIES_KEY);
+        String qString = Utils.getQueries();
         try {
-            if (qString != null) {
-                Type type = new TypeToken<List<Query>>() {
+            Type type = new TypeToken<List<Query>>() {
+            }.getType();
+            List<Query> qu = Utils.fromJson(qString, type);
+            // Check the length of qu, if it's 0, then it's empty and we
+            // must load the default queries.
+            if (qu.size() == 0) {
+                // Throw an exception to load the default queries.
+                throw new Exception("Empty.");
+            }
+            for (Query query : qu) {
+                this.queries.addElement(query);
+            }
+        } catch (Exception e) {
+            Log.toError("Couldn't read stored queries: " + e.getMessage());
+            Log.toError("Loading built-in queries.");
+            try {
+                // Read the default queries from /src/resources/queries.json.
+                String qJson = Utils.readResourceFile("/queries.json");
+                Type queriesType = new TypeToken<List<Query>>() {
                 }.getType();
-                List<Query> qu = Utils.fromJson(qString, type);
+                List<Query> qu = Utils.fromJson(qJson, queriesType);
                 for (Query query : qu) {
                     this.queries.addElement(query);
                 }
+                // Save the queries to the extension config.
+                Utils.setQueries(qJson);
+            } catch (Exception ex) {
+                Log.toError("Couldn't read built-in queries: " + e.getMessage());
+                // Use an empty list.
+                this.queries = new DefaultListModel<Query>();
             }
-        } catch (Exception e) {
-            // ZZZ: Load default queries here.
-            // Couldn't read stored queries.
-            Log.toError("Couldn't read stored queries: " + e.getMessage());
-            Log.toError("Creating an empty list of queries.");
-            this.queries = new DefaultListModel<Query>();
         }
     }
 

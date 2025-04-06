@@ -46,7 +46,7 @@ gradle wrapper --gradle-version 8.12
 ## Building
 
 1. `./gradlew jar`
-2. In VS Code, use the `ctrl+shift+b` to run the main build task.
+2. In VS Code, use `ctrl+shift+b` to run the main build task.
 
 ## Debugging
 I use VS Code. You can debug your Burp extensions using my blog post at
