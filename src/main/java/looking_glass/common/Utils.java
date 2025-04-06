@@ -2,17 +2,12 @@ package looking_glass.common;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 import javax.swing.JOptionPane;
 
 import java.time.Instant;
 import java.util.List;
 import java.lang.reflect.Type;
-import java.nio.file.Files;
+import java.io.InputStream;
 
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.http.message.HttpHeader;

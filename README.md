@@ -1,10 +1,17 @@
+![logo](/.github/00-logo.png)
+
 # Looking Glass - Index, Query, Repeat
 Looking Glass is a Burp extension that stores all requests/responses in a
 database. You can query this data to discover endpoints, data, and anything you
 might have missed.
 
-The extension uses Burp's Montoya APIs. It's incompatible with older versions of
-Burp that don't use support this API.
+The name and the logo are based on the (now defunct) legendary
+[Looking Glass Studios][looking-wiki], creator of some of my favorite games such
+as [System Shock][systemshock] and the [Thief][thief] series.
+
+[looking-wiki]:https://en.wikipedia.org/wiki/Looking_Glass_Studios
+[systemshock]: https://en.wikipedia.org/wiki/System_Shock
+[thief]: https://en.wikipedia.org/wiki/Thief_(series)
 
 ## Quick Start
 
@@ -167,8 +174,16 @@ hundreds of Burp projects. This database gives us the ability to discover points
 of interests across all of our tests even when they've happened in the past.
 
 Because we're using a SQLite database, you are not limited to the extension. You
-can use any software or program to do this. E.g., importing it to Kusto so you
-can query them in the cloud (and also because I like KQL more than SQL).
+can use any software or program to do query the data. E.g., importing it to
+Kusto so you can query them in the cloud (and also because I like KQL more than
+SQL).
+
+### Naming
+Originally, I wanted to name the extension [Simurgh][sim-wiki], after the legendary bird in Persian mythology. That would also mean I could use this 
+
+
+
+[sim-wiki]: https://en.wikipedia.org/wiki/Simurgh
 
 ### Similar Tools
 I found a few other extensions that logged Burp requests/responses. Why create

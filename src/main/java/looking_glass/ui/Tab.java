@@ -1,20 +1,20 @@
 package looking_glass.ui;
 
 import java.awt.*;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
 import java.io.File;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-
-import com.google.gson.reflect.TypeToken;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.gson.reflect.TypeToken;
 
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.message.requests.HttpRequest;
@@ -250,7 +250,7 @@ public class Tab extends JSplitPane {
             // Set the model to the table.
             resultsTable.setModel(resultModel);
 
-            // ZZZ: Is this needed? Copilot suggested it but I don't think it's
+            // TODO: Is this needed? Copilot suggested it but I don't think it's
             // needed.
             // Resize the columns to fit the content.
             for (int i = 0; i < metaData.getColumnCount(); i++) {
