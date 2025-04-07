@@ -86,5 +86,9 @@
   {
     "title": "Filter responses by cookie",
     "text": "SELECT DISTINCT \n  req.url,\n  json_extract(h.value, '$.value') AS cookie_value\nFROM responses res\nJOIN requests req ON res.request_id = req.request_id\nJOIN json_each(res.data, '$.headers') h\nWHERE json_extract(h.value, '$.name') = 'Set-Cookie'\nAND json_extract(h.value, '$.value') LIKE '%cookie_name%';"
+  },
+  {
+    "title": "Word list of parameter names",
+    "text": "WITH RECURSIVE split_parameters AS (\n    SELECT\n        ROWID AS id,\n        parameter_names AS original,\n        SUBSTR(parameter_names, 0, INSTR(parameter_names || ',', ',')) AS param,\n        SUBSTR(parameter_names, INSTR(parameter_names || ',', ',') + 1) AS remainder\n    FROM requests\n    UNION ALL\n    SELECT\n        id,\n        original,\n        SUBSTR(remainder, 0, INSTR(remainder || ',', ',')),\n        SUBSTR(remainder, INSTR(remainder || ',', ',') + 1)\n    FROM split_parameters\n    WHERE remainder != ''\n)\nSELECT DISTINCT param\nFROM split_parameters\nWHERE param != ''\n  AND param GLOB '[ -~]*';"
   }
 ]

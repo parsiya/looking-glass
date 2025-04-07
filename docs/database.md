@@ -93,7 +93,8 @@ an enum and a subset of all possible content-type values. This is stored in
 
 By converting the Burp's proxy filter to Bambda mode, I figure out which
 MimeTypes are allowed by each checkbox. Instead of checking against specific
-MimeTypes, it checks whether it's one of the unchecked ones.
+MimeTypes, it checks whether it's one of the unchecked ones. This is a
+screenshot of Burp's MIME type checkboxes.
 
 ![Burp proxy filter MIME types](/.github/03-mimetypes.png)
 
@@ -136,7 +137,6 @@ Or as a JSON string:
 
 ```json
 {
-  // removed
   "parameters": [
     {
       "parameterType": "URL",
@@ -148,7 +148,6 @@ Or as a JSON string:
       "name": "param2",
       "value": "value2"
     }
-    // removed
   ]
 }
 ```
@@ -214,10 +213,10 @@ Both requests and responses have `List<Header>` where the
 public String name, value;
 ```
 
-Which looks like your basic key/value pair JSON string:
+Which looks like your basic key/value pair JSON string. Assume this is a
+response:
 
 ```json
-// Assume this is a response.
 {
   "headers": [
     {
@@ -268,7 +267,6 @@ looks like. The JSON representation of `GET https://example.net/foo/bar?p=v` is:
       "name": "Cookie",
       "value": "cookie1=cookievalue1; cookie2=cookievalue2"
     },
-    // removed
   ],
   "cookies": [
     {

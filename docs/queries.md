@@ -94,10 +94,29 @@ SELECT * FROM response_bodies
 SELECT * FROM all_bodies
 ```
 
+### HTTP Requests
+Burp provides an `ishttps` field for each request and it's stored in the
+`is_https` column in the database. The value is `1` if true and `0` if not.
+
+```sql
+-- Insecure HTTP Requests
+SELECT distinct url FROM requests
+WHERE is_https == 0
+```
+
 ### List JavaScript Files
 Note, the default settings of the extension doesn't store the body of the
 JavaScript files, but the request and response are logged. Creating such a list
 is useful when you want to pass it to another tool to download/or analyze them.
+
+There are many articles and tools for JavaScript analysis, so I will not discuss
+them there. But some of the uses cases are:
+
+1. Secret scanning
+2. Endpoint discovery
+3. Plain static analysis to find bugs like XSS. See my older Burp extension [ESLinter][eslinter].
+
+[eslinter]: https://github.com/parsiya/eslinter
 
 Using the built-in view:
 
@@ -105,6 +124,8 @@ Using the built-in view:
 -- All JavaScript Files
 SELECT * FROM javascript_files
 ```
+
+![all javascript files](/.github/11-js-files.jpg | width=500)
 
 There are multiple ways of doing this and I suggest you use them all to catch
 all the edge cases.
@@ -142,6 +163,28 @@ WHERE req.url LIKE '%.js'
 OR res.inferred_content_type = 'SCRIPT'
 OR res.content_type LIKE '%javascript%';
 ```
+
+### Requests with JSON Payloads
+The browser/tool should set the request's `Content-Type` header to
+`application/json`.
+
+```sql
+-- JSON Payloads
+SELECT url, method FROM requests
+WHERE content_type LIKE "%json%"
+```
+
+### Requests with Authorization Header
+All header names are also stored in `header_names` column for both requests and
+responses.
+
+```sql
+-- Authorization Header
+SELECT distinct url, method FROM requests
+WHERE header_names LIKE "%authorization%"
+```
+
+![authorization header](/.github/08-authorization.jpg | width=450)
 
 ### Everything in the Database
 If you want to see everything and also pair request and responses together, use
@@ -383,6 +426,56 @@ SELECT name, sql
 FROM sqlite_master 
 WHERE type = 'view';
 ```
+
+### Word List from all Parameters
+This is useful if you want to create wordlists for fuzzing.
+
+A good easy way is to look at the `parameter_names` column. It has a
+comma-separated list of all request parameters.
+
+```sql
+SELECT parameter_names
+FROM requests
+WHERE Host Like "%ea.com%"
+```
+
+You can do a bit of post-processing to get a decent word list:
+
+1. Replace `,` with ` `.
+2. Split by ` `.
+3. Remove duplicates.
+
+You can do some of that in SQLite. The following query has some garbage in the
+end, this is mainly because some requests have binary payloads that look like
+JSON or XML parameters and Burp incorrectly classifies them as parameters. The
+result is sorted so you can copy the top results.
+
+You can add conditions to filter by `Host` column.
+
+```sql
+WITH RECURSIVE split_parameters AS (
+    SELECT
+        ROWID AS id,
+        parameter_names AS original,
+        SUBSTR(parameter_names, 0, INSTR(parameter_names || ',', ',')) AS param,
+        SUBSTR(parameter_names, INSTR(parameter_names || ',', ',') + 1) AS remainder
+    FROM requests
+    UNION ALL
+    SELECT
+        id,
+        original,
+        SUBSTR(remainder, 0, INSTR(remainder || ',', ',')),
+        SUBSTR(remainder, INSTR(remainder || ',', ',') + 1)
+    FROM split_parameters
+    WHERE remainder != ''
+)
+SELECT DISTINCT param
+FROM split_parameters
+WHERE param != ''
+  AND param GLOB '[ -~]*';
+```
+
+![parameter names](/.github/12-params.png)
 
 I've already paid for you to create as many queries as you can, they're free.
 Sky's the limit!

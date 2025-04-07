@@ -1,16 +1,22 @@
+# Looking Glass - Index, Query, Repeat
+Looking Glass is a Burp extension that archives all requests and responses in a
+database, enabling you to dig deep and discover insights via SQL queries.
+
+Import traffic from all your Burp projects over time and search historical
+traffic such as:
+
+* Retrieve all JavaScript URLs for static analysis or secret scanning.
+* All endpoints for a domain.
+* Vulnerable endpoints for a newly discovered bug.
+* Create a wordlists from all parameter names.
+
 ![logo](/.github/00-logo.png)
 
-# Looking Glass - Index, Query, Repeat
-Looking Glass is a Burp extension that stores all requests/responses in a
-database. You can query this data to discover endpoints, data, and anything you
-might have missed.
-
 The name and the logo are based on the (now defunct) legendary
-[Looking Glass Studios][looking-wiki], creator of some of my favorite games such
-as [System Shock][systemshock] and the [Thief][thief] series.
+[Looking Glass Studios][looking-wiki], creator of [the Thief series][thief]
+(one of my favorites). I didn't want to generate an AI logo based on it.
 
 [looking-wiki]:https://en.wikipedia.org/wiki/Looking_Glass_Studios
-[systemshock]: https://en.wikipedia.org/wiki/System_Shock
 [thief]: https://en.wikipedia.org/wiki/Thief_(series)
 
 ## Quick Start
@@ -35,7 +41,7 @@ If you want to import data from existing projects.
 
 Other docs:
 
-* [docs/database.md][db]: Explains the database schema and columns.
+* [docs/database.md][db]: The database schema and columns.
 * [docs/queries.md][queries]: Sample queries for possible use cases.
 * [docs/settings.md][settings]: Extension settings.
 
@@ -77,15 +83,15 @@ You can log all day and not be wiser. Knowledge comes from mining the data (lol)
 Queries are SQL and we have two tables: `requests` and `responses`. The value of
 the `request_id` column for each response points to the `requests` table.
 
-The extension comes with some built-in queries to get you started. You can also
-import/export queries from/to JSON. 
+The extension has a few built-in queries to get you started. You can also
+import/export queries from/to JSON.
 
 See the database structure at [docs/database.md][db] and more queries at
 [docs/queries.md][queries]. If you have any suggestions for queries, please
 create an issue or a pull request.
 
-The comment on top of each query is the name of the query in the built-in set.
-You're welcome to trim them for your own usage.
+Here are a few queries. The comment on top of each query is the name of the
+query in the built-in set. You're welcome to trim them for your own usage.
 
 ### List Paths for a Host
 You want to see all the paths for a host. This is usually used to create a list
@@ -98,6 +104,19 @@ WHERE host LIKE "%ea.com%"
 ```
 
 ![paths for ea.com](/.github/07-paths.jpg)
+
+### List JavaScript Files
+This is useful if you want to retrieve all JavaScript URLs you've seen. You can
+pass the URLs to a separate tool to download (e.g., `wget` or `cURL`). Then you
+can use the files for secret scanning, endpoint discovery, or plain static
+analysis.
+
+```sql
+-- All JavaScript Files
+SELECT * FROM javascript_files
+```
+
+![all javascript files](/.github/11-js-files.jpg | width=500)
 
 ### Requests with a Specific Parameter Name
 The `parameter_names` contains a comma separated list of all parameter names in
@@ -120,37 +139,11 @@ WHERE parameter_names LIKE "%update%"
 AND method == "POST"
 ```
 
-### Requests with JSON Payloads
-The browser/tool should set the request's `Content-Type` header to
-`application/json`.
+### Word List of Parameter Names
+Use the built-in query (needs some post processing). See the section in
+[docs/queries.md][queries] for the entire query and discussion.
 
-```sql
--- JSON Payloads
-SELECT url, method FROM requests
-WHERE content_type LIKE "%json%"
-```
-
-### Requests with Authorization Header
-All header names are also stored in `header_names` column for both requests and
-responses.
-
-```sql
--- Authorization Header
-SELECT distinct url, method FROM requests
-WHERE header_names LIKE "%authorization%"
-```
-
-![authorization header](/.github/08-authorization.jpg)
-
-### HTTP Requests
-Burp provides an `ishttps` field for each request and it's stored in the
-`is_https` column in the database. The value is `1` if true and `0` if not.
-
-```sql
--- Insecure HTTP Requests
-SELECT distinct url FROM requests
-WHERE is_https == 0
-```
+![parameter names](/.github/12-params.png)
 
 ## Development
 See [DEVELOPMENT.md](DEVELOPMENT.md).
@@ -179,11 +172,27 @@ Kusto so you can query them in the cloud (and also because I like KQL more than
 SQL).
 
 ### Naming
-Originally, I wanted to name the extension [Simurgh][sim-wiki], after the legendary bird in Persian mythology. That would also mean I could use this 
+Originally, I wanted to name the extension [Simurgh][sim-wiki], after the
+legendary bird in Persian mythology. Simurgh is a bird of wisdom and I feel like
+it could be a great mascot.
 
+Using tool names based on Persian mythology was inspired by [Pishi][pishi]
+(kitty or cat in Persian) and the SQLi tool `Havij` (carrot in Persian). That
+would also mean I could use this [not-AI generate-kick-ass-without-copyright
+logo][sim-logo].
 
+However, my time at videogame company has thought me that marketing is half of
+the battle. Your tool will not be popular if people cannot pronounce the name.
+So, I will do it for another tool later.
+
+As mentioned above, the name Looking Glass is based on the legendary game
+studio. Looking Glass actually means mirror, but the logo of the studio shows a
+paper telescope (which is not a looking glass). This contradiction has stayed
+with me ever since I saw it decades ago.
 
 [sim-wiki]: https://en.wikipedia.org/wiki/Simurgh
+[sim-logo]: https://en.wikipedia.org/wiki/Simurgh#/media/File:Senmurv.svg
+[pishi]: https://r00tkitsmm.github.io/fuzzing/2024/11/08/Pishi.html
 
 ### Similar Tools
 I found a few other extensions that logged Burp requests/responses. Why create
