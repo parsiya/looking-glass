@@ -143,7 +143,7 @@ AND method == "POST"
 Use the built-in query (needs some post processing). See the section in
 [docs/queries.md][queries] for the entire query and discussion.
 
-![parameter names](/.github/12-params.png)
+![parameter names](/.github/13-params2.png)
 
 ## Development
 See [DEVELOPMENT.md](DEVELOPMENT.md).
