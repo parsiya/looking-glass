@@ -10,15 +10,6 @@ traffic such as:
 * Vulnerable endpoints for a newly discovered bug.
 * Create a wordlists from all parameter names.
 
-![logo](/.github/00-logo.png)
-
-The name and the logo are based on the (now defunct) legendary
-[Looking Glass Studios][looking-wiki], creator of [the Thief series][thief]
-(one of my favorites). I didn't want to generate an AI logo based on it.
-
-[looking-wiki]:https://en.wikipedia.org/wiki/Looking_Glass_Studios
-[thief]: https://en.wikipedia.org/wiki/Thief_(series)
-
 ## Quick Start
 
 1. Add the jar file from the `release` directory as an extension in Burp.
@@ -116,7 +107,7 @@ analysis.
 SELECT * FROM javascript_files
 ```
 
-![all javascript files](/.github/11-js-files.jpg | width=500)
+![all javascript files](/.github/11-js-files.jpg)
 
 ### Requests with a Specific Parameter Name
 The `parameter_names` contains a comma separated list of all parameter names in
@@ -181,18 +172,19 @@ Using tool names based on Persian mythology was inspired by [Pishi][pishi]
 would also mean I could use this [not-AI generate-kick-ass-without-copyright
 logo][sim-logo].
 
-However, my time at videogame company has thought me that marketing is half of
+However, my time at video game company has thought me that marketing is half of
 the battle. Your tool will not be popular if people cannot pronounce the name.
 So, I will do it for another tool later.
 
-As mentioned above, the name Looking Glass is based on the legendary game
-studio. Looking Glass actually means mirror, but the logo of the studio shows a
-paper telescope (which is not a looking glass). This contradiction has stayed
-with me ever since I saw it decades ago.
+The name Looking Glass pays homage to the legendary game studio and creator of
+[the Thief series][thief] and System Shock. Looking Glass actually means mirror,
+but the logo of the studio shows a paper telescope (which is not a looking
+glass). This contradiction has stayed with me since I saw it decades ago.
 
 [sim-wiki]: https://en.wikipedia.org/wiki/Simurgh
 [sim-logo]: https://en.wikipedia.org/wiki/Simurgh#/media/File:Senmurv.svg
 [pishi]: https://r00tkitsmm.github.io/fuzzing/2024/11/08/Pishi.html
+[thief]: https://en.wikipedia.org/wiki/Thief_(series)
 
 ### Similar Tools
 I found a few other extensions that logged Burp requests/responses. Why create
